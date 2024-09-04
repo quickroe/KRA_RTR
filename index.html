@@ -37,8 +37,9 @@
             "esri/views/MapView",
             "esri/layers/GeoJSONLayer",
             "esri/widgets/BasemapToggle",
-            "esri/widgets/Popup"
-        ], (Map, MapView, GeoJSONLayer, BasemapToggle, Popup) => {
+            "esri/widgets/Popup",
+            "esri/widgets/Locate"
+        ], (Map, MapView, GeoJSONLayer, BasemapToggle, Popup,Locate) => {
 
             // Warna untuk setiap kategori NAMOBJ
             const renderer_RTRW = {
@@ -129,6 +130,12 @@
                     }
                 });
             });
+            //lokasii
+            const locateBtn = new Locate({
+                view:view
+            });
+            // lokasi
+            view.ui.add(locateBtn, {position:"bottom-left"});
 
         });
     </script>
