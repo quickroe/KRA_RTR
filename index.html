@@ -14,32 +14,19 @@
             height: 100%;
             width: 100%;
         }
-
-        #layerToggle {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: white;
-            padding: 10px;
-            z-index: 99;
-        }
     </style>
 </head>
 <body>
     <div id="viewDiv"></div>
-    <div id="layerToggle">
-        <input type="checkbox" id="toggleRTRW" checked>
-        <label for="toggleRTRW">Tampilkan Layer RTRW</label>
-    </div>
     <script>
         require([
             "esri/Map",
             "esri/views/MapView",
             "esri/layers/GeoJSONLayer",
             "esri/widgets/BasemapToggle",
-            "esri/widgets/Popup",
+            "esri/widgets/LayerList",
             "esri/widgets/Locate"
-        ], (Map, MapView, GeoJSONLayer, BasemapToggle, Popup,Locate) => {
+        ], (Map, MapView, GeoJSONLayer, BasemapToggle, LayerList, Locate) => {
 
             // Warna untuk setiap kategori NAMOBJ
             const renderer_RTRW = {
@@ -108,29 +95,15 @@
             // Menambahkan BasemapToggle ke view
             view.ui.add(toggle, "top-right");
 
-            // Fungsi untuk Toggle Layer RTRW
-            const toggleRTRW = document.getElementById("toggleRTRW");
-            toggleRTRW.addEventListener("change", () => {
-                RTRW.visible = toggleRTRW.checked;
+            // Layer List untuk mengelola layer
+            const layerList = new LayerList({
+                view: view
             });
 
-            // Popup saat mengklik area di layer RTRW
-            view.on("click", (event) => {
-                view.hitTest(event).then((response) => {
-                    const results = response.results;
-                    if (results.length > 0) {
-                        const graphic = results.filter((result) => {
-                            return result.graphic.layer === RTRW;
-                        })[0].graphic;
-                        view.popup.open({
-                            title: graphic.getAttribute("NAMOBJ"),
-                            location: event.mapPoint,
-                            content: "Kategori: " + graphic.getAttribute("NAMOBJ")
-                        });
-                    }
-                });
-            });
-            //lokasii
+            // Menambahkan LayerList ke view di bagian bawah kiri
+            view.ui.add(layerList, "bottom-left");
+
+            //lokasi
             const locateBtn = new Locate({
                 view:view
             });
