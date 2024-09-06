@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game AHZA</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        canvas {
+            background-color: white;
+            border: 2px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+    <script>
+        // Langkah 1: Setup kanvas
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Langkah 2: Ukuran pemain dan posisi awal
+        const player = {
+            width: 50,
+            height: 50,
+            x: canvas.width / 2 - 25,
+            y: canvas.height - 60,
+            speed: 7,
+            dx: 0
+        };
+
+        // Langkah 3: Objek jatuh
+        const obstacle = {
+            width: 50,
+            height: 50,
+            x: Math.random() * (canvas.width - 50),
+            y: -50,
+            speed: 20
+        };
+
+        let gameOver = false;
+
+        // Langkah 4: Fungsi untuk menggambar pemain
+        function drawPlayer() {
+            ctx.fillStyle = 'black';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+        }
+
+        // Langkah 5: Fungsi untuk menggambar objek jatuh
+        function drawObstacle() {
+            ctx.fillStyle = '#898989';
+            ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        }
+
+        // Langkah 6: Update posisi objek jatuh
+        function updateObstacle() {
+            obstacle.y += obstacle.speed;
+
+            if (obstacle.y > canvas.height) {
+                obstacle.y = -50;
+                obstacle.x = Math.random() * (canvas.width - 50);
+            }
+        }
+
+        // Langkah 7: Deteksi tabrakan
+        function detectCollision() {
+            if (player.x < obstacle.x + obstacle.width &&
+                player.x + player.width > obstacle.x &&
+                player.y < obstacle.y + obstacle.height &&
+                player.y + player.height > obstacle.y) {
+                gameOver = true;
+            }
+        }
+
+        // Langkah 8: Fungsi untuk menggambar teks Game Over
+        function drawGameOver() {
+            ctx.font = '50px Arial';
+            ctx.fillStyle = '#898989';
+            ctx.fillText('Game Over', canvas.width / 3, canvas.height / 2);
+        }
+
+        // Langkah 9: Update posisi pemain
+        function updatePlayerPosition() {
+            player.x += player.dx;
+
+            // Cegah pemain keluar dari layar
+            if (player.x < 0) player.x = 0;
+            if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+        }
+
+        // Langkah 10: Fungsi utama untuk menjalankan game
+        function updateGame() {
+            if (!gameOver) {
+                // Bersihkan kanvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Gambar pemain dan objek jatuh
+                drawPlayer();
+                drawObstacle();
+
+                // Update posisi objek jatuh dan pemain
+                updateObstacle();
+                updatePlayerPosition();
+
+                // Deteksi tabrakan
+                detectCollision();
+
+                // Panggil fungsi ini lagi pada frame berikutnya
+                requestAnimationFrame(updateGame);
+            } else {
+                drawGameOver();
+            }
+        }
+
+        // Langkah 11: Fungsi untuk menangani kontrol keyboard
+        function keyDown(e) {
+            if (e.key === 'ArrowRight') {
+                player.dx = player.speed;
+            } else if (e.key === 'ArrowLeft') {
+                player.dx = -player.speed;
+            }
+        }
+
+        function keyUp(e) {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                player.dx = 0;
+            }
+        }
+
+        // Langkah 12: Event listener untuk keyboard
+        document.addEventListener('keydown', keyDown);
+        document.addEventListener('keyup', keyUp);
+
+        // Jalankan game
+        updateGame();
+    </script>
+</body>
+</html>
