@@ -14,20 +14,52 @@
             height: 100%;
             width: 100%;
         }
+        .coordinate-input {
+        position: absolute;
+        top: 580px;
+        left: 10px;
+        z-index: 99;
+        background-color: white;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #0079c1;
+        display: none;
+            }
+
+        .toggle-btn {
+        position: absolute;
+        top: 540px;
+        left: 10px;
+        z-index: 100;
+        background-color: white;
+        padding: 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        border: 1px solid #0079c1;
+        }
     </style>
 </head>
 <body>
     <div id="viewDiv"></div>
+    <div class="toggle-btn" id="toggleBtn">Enable Coordinate Input</div>
+
+    <div class="coordinate-input" id="coordinateInput">
+        <label for="latitude">Latitude:</label>
+        <input type="text" id="latitude" placeholder="Enter Latitude"><br>
+        <label for="longitude">Longitude:</label>
+        <input type="text" id="longitude" placeholder="Enter Longitude"><br>
+        <button id="goToBtn">Go To</button>
+     </div>
     <script>
         require([
             "esri/Map",
             "esri/views/MapView",
             "esri/layers/GeoJSONLayer",
+            "esri/layers/GroupLayer",
             "esri/widgets/BasemapToggle",
             "esri/widgets/LayerList",
-            "esri/widgets/Expand",
             "esri/widgets/Locate"
-        ], (Map, MapView, GeoJSONLayer, BasemapToggle, LayerList, Expand, Locate) => {
+        ], (Map, MapView, GeoJSONLayer, GroupLayer, BasemapToggle, LayerList, Locate) => {
 
             // Warna untuk setiap kategori NAMOBJ
             const renderer_RTRW = {
@@ -35,7 +67,27 @@
                 field: "NAMOBJ",
                 uniqueValueInfos: [
                     { value: "Kawasan Cagar Alam Geologi", symbol: { type: "simple-fill", color: [255, 0, 0, 0.2], outline: { width: 1, color: "#000000" } } },
-                    // (data lainnya tetap sama seperti sebelumnya)
+                    { value: "Kawasan Cagar Budaya", symbol: { type: "simple-fill", color: [0, 255, 0, 0.2], outline: { width: 1, color: "#000000" } } },
+                    { value: "Kawasan Hortikultura", symbol: { type: "simple-fill", color: [0, 0, 255, 0.2], outline: { width: 1, color: "#000000" } } },
+                    { value: "Kawasan Hutan Dengan Tujuan Khusus", symbol: { type: "simple-fill", color: [255, 255, 0, 0.2], outline: { width: 1, color: "#000000" } } },
+                    { value: "Kawasan Hutan Lindung", symbol: { type: "simple-fill", color: [255, 0, 255, 0.2], outline: { width: 1, color: "#000000" } } },
+                    { value: "Kawasan Hutan Produksi Terbatas", symbol: { type: "simple-fill", color: [0, 255, 255, 0.2], outline: { width: 1, color: "#000000" } } },
+                    { value: "Kawasan Hutan Rakyat", symbol: { type: "simple-fill", color: [128, 0, 0, 0.2], outline: { width: 1, color: "#000000" } } },
+                    { value: "Kawasan Industri", symbol: { type: "simple-fill", color: [128, 128, 0, 0.2], outline: { width: 1, color: "#000000" } } },
+                    { value: "Kawasan Lindung Spiritual dan Kearifan Lokal", symbol: { type: "simple-fill", color: [0, 128, 128, 0.2], outline: { width: 1, color: "#000000" } } },
+                    { value: "Kawasan Perkebunan", symbol: { type: "simple-fill", color: [128, 0, 128, 0.2], outline: { width: 1, color: "#000000" } } },
+                    { value: "Kawasan Permukiman Perdesaan", symbol: { type: "simple-fill", color: [255, 128, 128, 0.2], outline: { width: 1, color: "#000000" } } },
+                    { value: "Kawasan Permukiman Perkotaan", symbol: { type: "simple-fill", color: [128, 255, 128, 0.2], outline: { width: 1, color: "#000000" } } },
+                    { value: "Kawasan Pertahanan dan Keamanan", symbol: { type: "simple-fill", color: [128, 128, 255, 0.2], outline: { width: 1, color: "#000000" } } },
+                    { value: "Kawasan Rawan Bencana Gerakan Tanah", symbol: { type: "simple-fill", color: [255, 255, 128, 0.2], outline: { width: 1, color: "#000000" } } },
+                    { value: "Kawasan Sekitar Danau atau Waduk", symbol: { type: "simple-fill", color: [255, 128, 255, 0.2], outline: { width: 1, color: "#000000" } } },
+                    { value: "Kawasan Tanaman Pangan", symbol: { type: "simple-fill", color: [128, 255, 255, 0.2], outline: { width: 1, color: "#000000" } } },
+                    { value: "Sempadan Mata Air", symbol: { type: "simple-fill", color: [255, 204, 153, 0.2], outline: { width: 1, color: "#000000" } } },
+                    { value: "Sempadan Sungai", symbol: { type: "simple-fill", color: [204, 255, 204, 0.2], outline: { width: 1, color: "#000000" } } },
+                    { value: "Sentra Industri Kecil dan Menengah", symbol: { type: "simple-fill", color: [204, 204, 255, 0.2], outline: { width: 1, color: "#000000" } } },
+                    { value: "Taman Hutan Raya", symbol: { type: "simple-fill", color: [255, 255, 204, 0.2], outline: { width: 1, color: "#000000" } } },
+                    { value: "Taman Wisata Alam", symbol: { type: "simple-fill", color: [255, 204, 255, 0.2], outline: { width: 1, color: "#000000" } } },
+                    { value: "Waduk", symbol: { type: "simple-fill", color: [204, 255, 255, 0.2], outline: { width: 1, color: "#000000" } } }
                 ]
             };
 
@@ -85,7 +137,27 @@
                     content: "Kategori: {LSD}"
                 }
             });
-
+            // Layer Lereng
+            const lereng = new GeoJSONLayer({
+                url: "https://raw.githubusercontent.com/codemrc/KRA_RTR/main/lereng.json",
+                title: "Lereng Kabupaten Karanganyar",
+                renderer: {
+                    type: "simple",
+                    symbol: {
+                        type: "simple-fill",
+                        color: [183, 132, 167, 0.2],  // ungu muda dengan transparansi
+                        outline: {
+                            color: [0, 0, 0, 0.5], // Outline hitam
+                            width: 1
+                        }
+                    }
+                },
+                visible: true,
+                popupTemplate: {
+                    title: "lereng",
+                    content: "Kategori: {LERENG}"
+                }
+            });
             // Layer Kemampuan Tanah
             const kemampuanTanah = new GeoJSONLayer({
                 url: "https://raw.githubusercontent.com/codemrc/KRA_RTR/main/KEMAMPUANTANAH.json",
@@ -118,7 +190,7 @@
 
             // Layer Persil Colomadu
             const Colomadu = new GeoJSONLayer({
-                url: "https://raw.githubusercontent.com/codemrc/KRA_RTR/main/kra-colomadu.json",
+                url: "https://raw.githubusercontent.com/codemrc/KRA_RTR/main/colomadu.json",
                 title: "Persil Colomadu",
                 renderer: {
                     type: "simple",
@@ -126,7 +198,7 @@
                         type: "simple-fill",
                         color: [255, 255, 255, 0],  // Transparan 0%
                         outline: {
-                            color: [0, 0, 0, 1], // Outline hitam
+                            color: [211, 211, 211, 0.6], // Outline abu-abu
                             width: 1
                         }
                     }
@@ -138,6 +210,7 @@
                         <b>Kategori:</b>
                         <ul>
                             <li><b>NIB:</b> {NIB}</li>
+                            <li><b>LUAS:</b> {LUASTERTUL} <b> m2<b></li>
                             <li><b>TIPE HAK:</b> {TIPEHAK}</li>
                             <li><b>KELURAHAN:</b> {KELURAHAN}</li>
                             <li><b>KECAMATAN:</b> {KECAMATAN}</li>
@@ -156,7 +229,7 @@
                         type: "simple-fill",
                         color: [255, 255, 255, 0],  // Transparan 0%
                         outline: {
-                            color: [0, 0, 0, 1], // Outline hitam
+                            color: [211, 211, 211, 0.6], // Outline abu-abu
                             width: 1
                         }
                     }
@@ -168,6 +241,7 @@
                         <b>Kategori:</b>
                         <ul>
                             <li><b>NIB:</b> {NIB}</li>
+                            <li><b>LUAS:</b> {LUASTERTUL} <b> m2<b></li>
                             <li><b>TIPE HAK:</b> {TIPEHAK}</li>
                             <li><b>KELURAHAN:</b> {KELURAHAN}</li>
                             <li><b>KECAMATAN:</b> {KECAMATAN}</li>
@@ -178,7 +252,7 @@
 
             // Layer Persil Tasikmadu
             const Tasikmadu = new GeoJSONLayer({
-                url: "https://raw.githubusercontent.com/codemrc/KRA_RTR/main/kra-tasikmadu.json",
+                url: "https://raw.githubusercontent.com/codemrc/KRA_RTR/main/tarsikmadu.json",
                 title: "Persil Tasikmadu",
                 renderer: {
                     type: "simple",
@@ -186,7 +260,7 @@
                         type: "simple-fill",
                         color: [255, 255, 255, 0],  // Transparan 0%
                         outline: {
-                            color: [0, 0, 0, 1], // Outline hitam
+                            color: [211, 211, 211, 0.6], // Outline abu-abu
                             width: 1
                         }
                     }
@@ -198,6 +272,7 @@
                         <b>Kategori:</b>
                         <ul>
                             <li><b>NIB:</b> {NIB}</li>
+                            <li><b>LUAS:</b> {LUASTERTUL} <b> m2<b></li>
                             <li><b>TIPE HAK:</b> {TIPEHAK}</li>
                             <li><b>KELURAHAN:</b> {KELURAHAN}</li>
                             <li><b>KECAMATAN:</b> {KECAMATAN}</li>
@@ -206,13 +281,145 @@
                 }
             });
 
+            // Layer Persil Tawangmangu
+            const Tawangmangu = new GeoJSONLayer({
+                url: "https://raw.githubusercontent.com/codemrc/KRA_RTR/main/tawangmangu.json",
+                title: "Persil Tawangmangu",
+                renderer: {
+                    type: "simple",
+                    symbol: {
+                        type: "simple-fill",
+                        color: [255, 255, 255, 0],  // Transparan 0%
+                        outline: {
+                            color: [211, 211, 211, 0.6], // Outline abu-abu
+                            width: 1
+                        }
+                    }
+                },
+                visible: true,
+                popupTemplate: {
+                    title: "Persil Tawangmangu",
+                    content: `
+                        <b>Kategori:</b>
+                        <ul>
+                            <li><b>NIB:</b> {NIB}</li>
+                            <li><b>LUAS:</b> {LUASTERTUL} <b> m2<b></li>
+                            <li><b>TIPE HAK:</b> {TIPEHAK}</li>
+                            <li><b>KELURAHAN:</b> {KELURAHAN}</li>
+                            <li><b>KECAMATAN:</b> {KECAMATAN}</li>
+                        </ul>
+                    `
+                }
+            });
+
+            // Layer Persil Jaten
+            const Jaten = new GeoJSONLayer({
+                url: "https://raw.githubusercontent.com/codemrc/KRA_RTR/main/jaten.json",
+                title: "Persil Jaten",
+                renderer: {
+                    type: "simple",
+                    symbol: {
+                        type: "simple-fill",
+                        color: [255, 255, 255, 0],  // Transparan 0%
+                        outline: {
+                            color: [211, 211, 211, 0.6], // Outline abu-abu
+                            width: 1
+                        }
+                    }
+                },
+                visible: true,
+                popupTemplate: {
+                    title: "Persil Jaten",
+                    content: `
+                        <b>Kategori:</b>
+                        <ul>
+                            <li><b>NIB:</b> {NIB}</li>
+                            <li><b>LUAS:</b> {LUASTERTUL} <b> m2<b></li>
+                            <li><b>TIPE HAK:</b> {TIPEHAK}</li>
+                            <li><b>KELURAHAN:</b> {KELURAHAN}</li>
+                            <li><b>KECAMATAN:</b> {KECAMATAN}</li>
+                        </ul>
+                    `
+                }
+            });
+
+             // Layer Persil Kebakkramat
+             const Kebakkramat = new GeoJSONLayer({
+                url: "https://raw.githubusercontent.com/codemrc/KRA_RTR/main/kebakkramat.json",
+                title: "Persil Kebakkramat",
+                renderer: {
+                    type: "simple",
+                    symbol: {
+                        type: "simple-fill",
+                        color: [255, 255, 255, 0],  // Transparan 0%
+                        outline: {
+                            color: [211, 211, 211, 0.6], // Outline abu-abu
+                            width: 1
+                        }
+                    }
+                },
+                visible: true,
+                popupTemplate: {
+                    title: "Persil Kebakkramat",
+                    content: `
+                        <b>Kategori:</b>
+                        <ul>
+                            <li><b>NIB:</b> {NIB}</li>
+                            <li><b>LUAS:</b> {LUASTERTUL} <b> m2<b></li>
+                            <li><b>TIPE HAK:</b> {TIPEHAK}</li>
+                            <li><b>KELURAHAN:</b> {KELURAHAN}</li>
+                            <li><b>KECAMATAN:</b> {KECAMATAN}</li>
+                        </ul>
+                    `
+                }
+            });
+
+             // Layer Persil Gondangrejo
+             const Gondangrejo = new GeoJSONLayer({
+                url: "https://raw.githubusercontent.com/codemrc/KRA_RTR/main/godangrejo.json",
+                title: "Persil Gondangrejo",
+                renderer: {
+                    type: "simple",
+                    symbol: {
+                        type: "simple-fill",
+                        color: [255, 255, 255, 0],  // Transparan 0%
+                        outline: {
+                            color: [211, 211, 211, 0.6], // Outline abu-abu
+                            width: 1
+                        }
+                    }
+                },
+                visible: true,
+                popupTemplate: {
+                    title: "Persil Gondangrejo",
+                    content: `
+                        <b>Kategori:</b>
+                        <ul>
+                            <li><b>NIB:</b> {NIB}</li>
+                            <li><b>LUAS:</b> {LUASTERTUL} <b> m2<b></li>
+                            <li><b>TIPE HAK:</b> {TIPEHAK}</li>
+                            <li><b>KELURAHAN:</b> {KELURAHAN}</li>
+                            <li><b>KECAMATAN:</b> {KECAMATAN}</li>
+                        </ul>
+                    `
+                }
+            });
+
+
+            // GroupLayer untuk sub-layer Persil
+            const persilGroup = new GroupLayer({
+                title: "Persil",
+                layers: [Colomadu, Karanganyar, Tasikmadu, Tawangmangu,Jaten,Kebakkramat,Gondangrejo]
+            });
+
             // Menambahkan semua layer ke map dalam urutan yang diinginkan
-            map.add(RTRW);
-            map.add(LSD);
+            map.add(persilGroup);
+            map.add(lereng);
             map.add(kemampuanTanah);
-            map.add(Colomadu);
-            map.add(Karanganyar);
-            map.add(Tasikmadu);
+            map.add(LSD);
+            map.add(RTRW);
+            
+          
 
             // Menambahkan BasemapToggle
             const toggle = new BasemapToggle({
@@ -222,28 +429,56 @@
 
             view.ui.add(toggle, "bottom-right");
 
-            // Menambahkan LayerList
+            // Menambahkan LayerList untuk menampilkan semua layer kecuali layer "Persil"
             const layerList = new LayerList({
-                view: view
+                view: view,
+                listItemCreatedFunction: (event) => {
+                    // Menyembunyikan layer Persil dari LayerList
+                    if (event.item.layer === persilGroup ) {
+                        event.item.visible = false ;
+                    }
+                }
             });
 
             view.ui.add(layerList, "top-left");
 
-            // Menambahkan Expand widget untuk Persil Layers
-            const expandPersilLayers = new Expand({
-                view: view,
-                content: layerList, // Menampilkan daftar layer
-                expandIconClass: "esri-icon-layer-list", // Ikon yang digunakan
-                group: "top-left" // Posisi expand di top-left
-            });
-
-            view.ui.add(expandPersilLayers, "top-left");
 
             // Menambahkan widget Locate untuk melacak lokasi pengguna
             const locate = new Locate({
                 view: view
             });
             view.ui.add(locate, "top-left");
+
+            // Dapatkan elemen DOM
+                var toggleBtn = document.getElementById("toggleBtn");
+                var coordinateInput = document.getElementById("coordinateInput");
+                var goToBtn = document.getElementById("goToBtn");
+
+            // Toggle untuk menampilkan atau menyembunyikan input koordinat
+                    toggleBtn.addEventListener("click", function () {
+                    if (coordinateInput.style.display === "none") {
+                    coordinateInput.style.display = "block";
+                    toggleBtn.innerText = "Disable Coordinate Input";
+                    } else {
+                    coordinateInput.style.display = "none";
+                    toggleBtn.innerText = "Enable Coordinate Input";
+                    }
+            });
+
+            // Event handler untuk tombol Go To
+                    goToBtn.addEventListener("click", function () {
+                    var latitude = parseFloat(document.getElementById("latitude").value);
+                    var longitude = parseFloat(document.getElementById("longitude").value);
+
+                    if (!isNaN(latitude) && !isNaN(longitude)) {
+                    view.goTo({
+                    center: [longitude, latitude],
+                    zoom: 19 // Sesuaikan level zoom
+                    });
+                    } else {
+                    alert("Please enter valid coordinates.");
+                    }
+                     });
         });
     </script>
 </body>
