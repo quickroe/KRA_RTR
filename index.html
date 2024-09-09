@@ -57,9 +57,10 @@
             "esri/layers/GeoJSONLayer",
             "esri/layers/GroupLayer",
             "esri/widgets/BasemapToggle",
+            "esri/widgets/Expand",
             "esri/widgets/LayerList",
             "esri/widgets/Locate"
-        ], (Map, MapView, GeoJSONLayer, GroupLayer, BasemapToggle, LayerList, Locate) => {
+        ], (Map, MapView, GeoJSONLayer, GroupLayer, BasemapToggle,Expand,LayerList, Locate) => {
 
             // Warna untuk setiap kategori NAMOBJ
             const renderer_RTRW = {
@@ -440,7 +441,12 @@
                 }
             });
 
-            view.ui.add(layerList, "top-left");
+            view.ui.add(new Expand({
+                    content: layerList,
+                    view: view,
+                    group: "top-left"}),
+             "top-left"
+            );
 
 
             // Menambahkan widget Locate untuk melacak lokasi pengguna
