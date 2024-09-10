@@ -406,11 +406,72 @@
                 }
             });
 
+             // Layer Persil Jatipuro
+             const Jatipuro = new GeoJSONLayer({
+                url: "https://raw.githubusercontent.com/codemrc/KRA_RTR/main/jatipuro.json",
+                title: "Persil Jatipuro",
+                renderer: {
+                    type: "simple",
+                    symbol: {
+                        type: "simple-fill",
+                        color: [255, 255, 255, 0],  // Transparan 0%
+                        outline: {
+                            color: [211, 211, 211, 0.6], // Outline abu-abu
+                            width: 1
+                        }
+                    }
+                },
+                visible: true,
+                popupTemplate: {
+                    title: "Persil Jatipuro",
+                    content: `
+                        <b>Kategori:</b>
+                        <ul>
+                            <li><b>NIB:</b> {NIB}</li>
+                            <li><b>LUAS:</b> {LUASTERTUL} <b> m2<b></li>
+                            <li><b>TIPE HAK:</b> {TIPEHAK}</li>
+                            <li><b>KELURAHAN:</b> {KELURAHAN}</li>
+                            <li><b>KECAMATAN:</b> {KECAMATAN}</li>
+                        </ul>
+                    `
+                }
+            });
+
+            // Layer Persil Karangpandan
+            const Karangpandan = new GeoJSONLayer({
+                url: "https://raw.githubusercontent.com/codemrc/KRA_RTR/main/karangpandan.json",
+                title: "Persil karangpandan",
+                renderer: {
+                    type: "simple",
+                    symbol: {
+                        type: "simple-fill",
+                        color: [255, 255, 255, 0],  // Transparan 0%
+                        outline: {
+                            color: [211, 211, 211, 0.6], // Outline abu-abu
+                            width: 1
+                        }
+                    }
+                },
+                visible: true,
+                popupTemplate: {
+                    title: "Persil karangpandan",
+                    content: `
+                        <b>Kategori:</b>
+                        <ul>
+                            <li><b>NIB:</b> {NIB}</li>
+                            <li><b>LUAS:</b> {LUASTERTUL} <b> m2<b></li>
+                            <li><b>TIPE HAK:</b> {TIPEHAK}</li>
+                            <li><b>KELURAHAN:</b> {KELURAHAN}</li>
+                            <li><b>KECAMATAN:</b> {KECAMATAN}</li>
+                        </ul>
+                    `
+                }
+            });
 
             // GroupLayer untuk sub-layer Persil
             const persilGroup = new GroupLayer({
                 title: "Persil",
-                layers: [Colomadu, Karanganyar, Tasikmadu, Tawangmangu,Jaten,Kebakkramat,Gondangrejo]
+                layers: [Jatipuro,Karangpandan, Tasikmadu, Tawangmangu,Jaten,Kebakkramat,Karanganyar,Gondangrejo,Colomadu]
             });
 
             // Menambahkan semua layer ke map dalam urutan yang diinginkan
@@ -419,25 +480,14 @@
             map.add(kemampuanTanah);
             map.add(LSD);
             map.add(RTRW);
-            
-          
-
-            // Menambahkan BasemapToggle
-            const toggle = new BasemapToggle({
-                view: view,
-                nextBasemap: "satellite"
-            });
-
-            view.ui.add(toggle, "bottom-right");
-
             // Menambahkan LayerList untuk menampilkan semua layer kecuali layer "Persil"
             const layerList = new LayerList({
                 view: view,
                 listItemCreatedFunction: (event) => {
-                    // Menyembunyikan layer Persil dari LayerList
-                    if (event.item.layer === persilGroup ) {
-                        event.item.visible = true ;
-                    }
+                // Menyembunyikan layer LSD, kemampuanTanah, dan lereng dari LayerList
+                const hiddenLayers = [LSD, kemampuanTanah, lereng];
+                if (hiddenLayers.includes(event.item.layer)) 
+                    {event.item.visible = false;}
                 }
             });
 
@@ -454,6 +504,13 @@
                 view: view
             });
             view.ui.add(locate, "top-left");
+            // Menambahkan BasemapToggle
+            const toggle = new BasemapToggle({
+                view: view,
+                nextBasemap: "satellite"
+            });
+
+            view.ui.add(toggle, "bottom-right");
 
             // Dapatkan elemen DOM
                 var toggleBtn = document.getElementById("toggleBtn");
