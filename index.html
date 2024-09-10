@@ -467,11 +467,197 @@
                     `
                 }
             });
+            
+             // Layer Persil Mojogedang
+             const Mojogedang = new GeoJSONLayer({
+                url: "https://raw.githubusercontent.com/codemrc/KRA_RTR/main/mojogedang.json",
+                title: "Persil Mojogedang",
+                renderer: {
+                    type: "simple",
+                    symbol: {
+                        type: "simple-fill",
+                        color: [255, 255, 255, 0],  // Transparan 0%
+                        outline: {
+                            color: [211, 211, 211, 0.6], // Outline abu-abu
+                            width: 1
+                        }
+                    }
+                },
+                visible: true,
+                popupTemplate: {
+                    title: "Persil Mojogedang",
+                    content: `
+                        <b>Kategori:</b>
+                        <ul>
+                            <li><b>NIB:</b> {NIB}</li>
+                            <li><b>LUAS:</b> {LUASTERTUL} <b> m2<b></li>
+                            <li><b>TIPE HAK:</b> {TIPEHAK}</li>
+                            <li><b>KELURAHAN:</b> {KELURAHAN}</li>
+                            <li><b>KECAMATAN:</b> {KECAMATAN}</li>
+                        </ul>
+                    `
+                }
+            });
+
+            // Layer Persil Jumantono
+            const Jumantono = new GeoJSONLayer({
+                url: "https://raw.githubusercontent.com/codemrc/KRA_RTR/main/jumantono.json",
+                title: "Persil Jumantono",
+                renderer: {
+                    type: "simple",
+                    symbol: {
+                        type: "simple-fill",
+                        color: [255, 255, 255, 0],  // Transparan 0%
+                        outline: {
+                            color: [211, 211, 211, 0.6], // Outline abu-abu
+                            width: 1
+                        }
+                    }
+                },
+                visible: true,
+                popupTemplate: {
+                    title: "Persil Jumantono",
+                    content: `
+                        <b>Kategori:</b>
+                        <ul>
+                            <li><b>NIB:</b> {NIB}</li>
+                            <li><b>LUAS:</b> {LUASTERTUL} <b> m2<b></li>
+                            <li><b>TIPE HAK:</b> {TIPEHAK}</li>
+                            <li><b>KELURAHAN:</b> {KELURAHAN}</li>
+                            <li><b>KECAMATAN:</b> {KECAMATAN}</li>
+                        </ul>
+                    `
+                }
+            });
+
+            // Layer Persil Ngargoyoso
+            const Ngargoyoso = new GeoJSONLayer({
+                url: "https://raw.githubusercontent.com/codemrc/KRA_RTR/main/ngargoyoso.json",
+                title: "Persil Ngargoyoso",
+                renderer: {
+                    type: "simple",
+                    symbol: {
+                        type: "simple-fill",
+                        color: [255, 255, 255, 0],  // Transparan 0%
+                        outline: {
+                            color: [211, 211, 211, 0.6], // Outline abu-abu
+                            width: 1
+                        }
+                    }
+                },
+                visible: true,
+                popupTemplate: {
+                    title: "Persil Ngargoyoso",
+                    content: `
+                        <b>Kategori:</b>
+                        <ul>
+                            <li><b>NIB:</b> {NIB}</li>
+                            <li><b>LUAS:</b> {LUASTERTUL} <b> m2<b></li>
+                            <li><b>TIPE HAK:</b> {TIPEHAK}</li>
+                            <li><b>KELURAHAN:</b> {KELURAHAN}</li>
+                            <li><b>KECAMATAN:</b> {KECAMATAN}</li>
+                        </ul>
+                    `
+                }
+            });
+
+            // Layer Persil Jumapolo
+            const Jumapolo = new GeoJSONLayer({
+                url: "https://raw.githubusercontent.com/codemrc/KRA_RTR/main/jumapolo.json",
+                title: "Persil Jumapolo",
+                renderer: {
+                    type: "simple",
+                    symbol: {
+                        type: "simple-fill",
+                        color: [255, 255, 255, 0],  // Transparan 0%
+                        outline: {
+                            color: [211, 211, 211, 0.6], // Outline abu-abu
+                            width: 1
+                        }
+                    }
+                },
+                visible: true,
+                popupTemplate: {
+                    title: "Persil Jumapolo",
+                    content: `
+                        <b>Kategori:</b>
+                        <ul>
+                            <li><b>NIB:</b> {NIB}</li>
+                            <li><b>LUAS:</b> {LUASTERTUL} <b> m2<b></li>
+                            <li><b>TIPE HAK:</b> {TIPEHAK}</li>
+                            <li><b>KELURAHAN:</b> {KELURAHAN}</li>
+                            <li><b>KECAMATAN:</b> {KECAMATAN}</li>
+                        </ul>
+                    `
+                }
+            });
+
+             // Layer Persil Jatiyoso
+             const Jatiyoso = new GeoJSONLayer({
+                url: "https://raw.githubusercontent.com/codemrc/KRA_RTR/main/jatiyoso.json",
+                title: "Persil Jatiyoso",
+                renderer: {
+                    type: "simple",
+                    symbol: {
+                        type: "simple-fill",
+                        color: [255, 255, 255, 0],  // Transparan 0%
+                        outline: {
+                            color: [211, 211, 211, 0.6], // Outline abu-abu
+                            width: 1
+                        }
+                    }
+                },
+                visible: true,
+                popupTemplate: {
+                    title: "Persil Jatiyoso",
+                    content: `
+                        <b>Kategori:</b>
+                        <ul>
+                            <li><b>NIB:</b> {NIB}</li>
+                            <li><b>LUAS:</b> {LUASTERTUL} <b> m2<b></li>
+                            <li><b>TIPE HAK:</b> {TIPEHAK}</li>
+                            <li><b>KELURAHAN:</b> {KELURAHAN}</li>
+                            <li><b>KECAMATAN:</b> {KECAMATAN}</li>
+                        </ul>
+                    `
+                }
+            });
+
+            // Layer Persil Matesih
+            const Matesih = new GeoJSONLayer({
+                url: "https://raw.githubusercontent.com/codemrc/KRA_RTR/main/metisih.json",
+                title: "Persil Matesih",
+                renderer: {
+                    type: "simple",
+                    symbol: {
+                        type: "simple-fill",
+                        color: [255, 255, 255, 0],  // Transparan 0%
+                        outline: {
+                            color: [211, 211, 211, 0.6], // Outline abu-abu
+                            width: 1
+                        }
+                    }
+                },
+                visible: true,
+                popupTemplate: {
+                    title: "Persil Matesih",
+                    content: `
+                        <b>Kategori:</b>
+                        <ul>
+                            <li><b>NIB:</b> {NIB}</li>
+                            <li><b>LUAS:</b> {LUASTERTUL} <b> m2<b></li>
+                            <li><b>TIPE HAK:</b> {TIPEHAK}</li>
+                            <li><b>KELURAHAN:</b> {KELURAHAN}</li>
+                            <li><b>KECAMATAN:</b> {KECAMATAN}</li>
+                        </ul>
+                    `
+                }
+            });
 
             // GroupLayer untuk sub-layer Persil
             const persilGroup = new GroupLayer({
                 title: "Persil",
-                layers: [Jatipuro,Karangpandan, Tasikmadu, Tawangmangu,Jaten,Kebakkramat,Karanganyar,Gondangrejo,Colomadu]
+                layers: [Jatipuro,Jumapolo,Jatiyoso,Jumantono,Matesih,Ngargoyoso,Mojogedang,Karangpandan, Tasikmadu, Tawangmangu,Jaten,Kebakkramat,Karanganyar,Gondangrejo,Colomadu]
             });
 
             // Menambahkan semua layer ke map dalam urutan yang diinginkan
@@ -538,6 +724,31 @@
                     center: [longitude, latitude],
                     zoom: 19 // Sesuaikan level zoom
                     });
+
+                    // Tambahkan pin (penanda lokasi) di lokasi yang diinputkan
+                    var point = {
+                        type: "point", // Jenis geometri
+                        longitude: longitude,
+                        latitude: latitude
+                        };
+
+                    var markerSymbol = {
+                        type: "simple-marker", // Jenis simbol
+                        color: [226, 119, 40], // Warna pin (misalnya oranye)
+                        outline: {color: [255, 255, 255], // Warna outline pin (putih)
+                                  width: 2
+                                  }
+                        };
+
+                        var pointGraphic = new Graphic({
+                            geometry: point,
+                            symbol: markerSymbol
+                        });
+
+                    // Hapus pin lama (jika ada) sebelum menambahkan yang baru
+                        view.graphics.removeAll();
+                        view.graphics.add(pointGraphic);
+
                     } else {
                     alert("Please enter valid coordinates.");
                     }
