@@ -14,9 +14,57 @@
             height: 100%;
             width: 100%;
         }
+        
+        /* Search Container di kanan atas */
+        .search-container {
+            position: absolute;
+            top: 10px;
+            left: 1320px;
+            z-index: 150;
+            background-color: rgb(48, 48, 48);
+            padding: 1px;
+            border-radius: 1px;
+            border: 1px solid #dfe0e0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            width: 13% ;
+        }
+
+        #toggleSearchBtn {
+            background-color: rgb(48, 48, 48);
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 1px;
+            border-radius: 1px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .search-form {
+            display: block; /* Menampilkan form pencarian secara default */
+        }
+
+        .search-container input, .search-container button {
+            padding: 3px;
+            margin: 3px 0;
+            width: 90%;
+            height: 13px;
+        }
+
+        .search-container button {
+            background-color:  rgb(124, 123, 123);
+            color: white;
+            border: none;
+            cursor: pointer;
+            width: 30%;
+        }
+        .white-label {
+            color: white; /* Mengatur warna label menjadi putih */
+        }
+
         .coordinate-input {
         position: absolute;
-        top: 540px;
+        top: 570px;
         left: 10px;
         z-index: 99;
         background-color: #0c0c0c9b;
@@ -29,7 +77,7 @@
 
         .toggle-btn {
         position: absolute;
-        top: 500px;
+        top: 530px;
         left: 10px;
         z-index: 100;
         background-color: rgba(37, 37, 37, 0.962);
@@ -53,10 +101,32 @@
             border: 1px solid hsl(0, 0%, 100%);
             border-radius: 5px;
             background-color: rgba(250, 249, 249, 0.962);
+        }
+
+
     </style>
 </head>
 <body>
     <div id="viewDiv"></div>
+
+    <div class="search-container">
+        <button id="toggleSearchBtn">Search NIB</button>
+        
+        <div id="searchForm" class="search-form" style="display: none;">
+    
+        <label for="searchKecamatan"class="white-label" >Kecamatan:</label>
+        <input type="text" id="searchKecamatan" placeholder="Masukkan Kecamatan">
+            
+        <label for="searchKelurahan"class="white-label" >Kelurahan:</label>
+        <input type="text" id="searchKelurahan" placeholder="Masukkan Kelurahan">
+            
+        <label for="searchNIB" class="white-label" >NIB:</label>
+        <input type="text" id="searchNIB" placeholder="Masukkan NIB">
+            
+        <button id="searchBtn">Cari</button>
+        </div>
+    </div>
+      
     <div class="toggle-btn" id="toggleBtn">Enable Coordinate Input</div>
 
     <div class="coordinate-input" id="coordinateInput">
@@ -737,7 +807,7 @@
             // GroupLayer untuk sub-layer Persil
             const persilGroup = new GroupLayer({
                 title: "Persil",
-                layers: [Jaten,Kerjo,Jatipuro,Jumapolo,Jatiyoso,Jumantono,Matesih,Ngargoyoso,
+                layers: [Jenawi,Kerjo,Jatipuro,Jumapolo,Jatiyoso,Jumantono,Matesih,Ngargoyoso,
                 Mojogedang,Karangpandan, Tasikmadu, Tawangmangu,Jaten,Kebakkramat,
                 Karanganyar,Gondangrejo,Colomadu]
             });
@@ -807,7 +877,7 @@
                     zoom: 19 // Sesuaikan level zoom
                     });
 
-                    // Tambahkan pin (penanda lokasi) di lokasi yang diinputkan
+            // Tambahkan pin (penanda lokasi) di lokasi yang diinputkan
                     var point = {
                         type: "point", // Jenis geometri
                         longitude: longitude,
@@ -834,7 +904,111 @@
                     } else {
                     alert("Please enter valid coordinates.");
                     }
-                     });
+                    });
+            
+             // Toggle search form
+                 var toggleSearchBtn = document.getElementById("toggleSearchBtn");
+                 var searchForm = document.getElementById("searchForm");
+
+                 toggleSearchBtn.addEventListener("click", function () {
+                    if (searchForm.style.display === "none") {
+                        searchForm.style.display = "block";
+                    toggleSearchBtn.innerText = "Minimaze Search NIB";
+                    } else {
+                    searchForm.style.display = "none";
+                    
+                    toggleSearchBtn.innerText = "Search NIB";
+                    }
+                }); 
+
+            // Fungsi pencarian
+                document.getElementById("searchBtn").addEventListener("click", function() {
+                var searchKecamatan = document.getElementById("searchKecamatan").value;
+                var searchKelurahan = document.getElementById("searchKelurahan").value;
+                var searchNIB = document.getElementById("searchNIB").value;
+
+                // Debugging untuk melihat input pengguna
+                console.log("Input Kecamatan: ", searchKecamatan);
+                console.log("Input Kelurahan: ", searchKelurahan);
+                console.log("Input NIB: ", searchNIB);
+
+                // Filter layer berdasarkan kriteria pencarian
+                var whereClause = [];
+
+                if (searchKecamatan) {
+                    whereClause.push(`KECAMATAN LIKE '%${searchKecamatan}%'`);
+                }
+                if (searchKelurahan) {
+                    whereClause.push(`KELURAHAN LIKE '%${searchKelurahan}%'`);
+                }
+                if (searchNIB) {
+                    whereClause.push(`NIB LIKE '%${searchNIB}%'`);
+                }
+                var finalWhereClause = whereClause.join(" AND ");
+
+                // Definisikan fungsi query untuk kedua layer
+                    function queryLayer(layer) {
+                    return layer.queryFeatures({
+                        where: finalWhereClause,  // Gunakan klausa where yang sama
+                        outFields: ["NIB", "KECAMATAN", "KELURAHAN", "LUASTERTUL", "TIPEHAK"], // Field-field yang diambil
+                        returnGeometry: true      // Penting untuk mendapatkan geometri untuk zoom
+                    });
+                }
+
+                // Query kedua layer (Jenawi,Kerjo,Jatipuro,Jumapolo,Jatiyoso,Jumantono,Matesih,Ngargoyoso,
+                //Mojogedang,Karangpandan, Tasikmadu, Tawangmangu,Jaten,Kebakkramat,
+                //Karanganyar,Gondangrejo,Colomadu)
+                Promise.all([queryLayer(Jenawi),queryLayer(Kerjo),queryLayer(Jatipuro),queryLayer(Jumapolo),queryLayer(Jatiyoso),
+                queryLayer(Jumantono),queryLayer(Matesih),queryLayer(Ngargoyoso),queryLayer(Mojogedang),queryLayer(Karangpandan),
+                queryLayer(Tasikmadu),queryLayer(Tawangmangu),queryLayer(Jaten),queryLayer(Kebakkramat),queryLayer(Karanganyar),
+                queryLayer(Gondangrejo),queryLayer(Colomadu)]).then(function(results) {
+                    var allFeatures = [];
+
+                    // Gabungkan semua fitur dari hasil query
+                    results.forEach(function(result) {
+                        allFeatures = allFeatures.concat(result.features);
+                    });
+
+                    if (allFeatures.length > 0) {
+                        // Dapatkan geometri fitur hasil pertama dan lakukan zoom
+                        var feature = allFeatures[0];
+                        view.goTo({
+                            target: feature.geometry,
+                            zoom: 19 // Atur zoom level, sesuaikan sesuai kebutuhan
+                        });then(function() {
+                       // Tampilkan popup setelah zoom
+                            view.popup.open({
+                                title: "Detail Bidang",
+                                location: feature.geometry,  // Lokasi untuk menampilkan popup
+                                content: `
+                                <b>NIB:</b> ${feature.attributes.NIB}<br>
+                                <b>Kecamatan:</b> ${feature.attributes.KECAMATAN}<br>
+                                <b>Kelurahan:</b> ${feature.attributes.KELURAHAN}<br>
+                                <b>Luas:</b> ${feature.attributes.LUASTERTUL} m2<br>
+                                <b>Tipe Hak:</b> ${feature.attributes.TIPEHAK}
+                                 `
+                            });
+                            // Highlight atau select bidang
+                            var highlight = view.highlight([feature]);
+                
+                            // Debugging
+                            console.log("Ditemukan fitur: ", feature.attributes);
+
+                            // Membuat fitur tetap terseleksi selama 3 detik
+                            setTimeout(function() {
+                            highlight.remove(); // Menghilangkan highlight
+                            }, 3000);
+                        });
+                        
+                    } else {
+                        // Jika tidak ada fitur yang ditemukan
+                        alert("Tidak ada hasil yang cocok dengan pencarian Anda.");
+                    }
+                }).catch(function(error) {
+                    console.error("Error saat query fitur: ", error);
+                });
+            });
+
         });
     </script>
 </body>
