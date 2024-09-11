@@ -753,7 +753,7 @@
                 view: view,
                 listItemCreatedFunction: (event) => {
                 // Menyembunyikan layer LSD, kemampuanTanah, dan lereng dari LayerList
-                const hiddenLayers = [LSD, kemampuanTanah, lereng];
+                const hiddenLayers = [LSD, kemampuanTanah, lereng,persilGroup];
                 if (hiddenLayers.includes(event.item.layer)) 
                     {event.item.visible = false;}
                 }
