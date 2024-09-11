@@ -19,11 +19,12 @@
         top: 540px;
         left: 10px;
         z-index: 99;
-        background-color: white;
+        background-color: #0c0c0c9b;
         padding: 10px;
         border-radius: 5px;
-        border: 1px solid #0079c1;
+        border: 1px solid #a3a3a3;
         display: none;
+        color: hsl(0, 0%, 100%); /* Warna teks input */
             }
 
         .toggle-btn {
@@ -31,12 +32,27 @@
         top: 500px;
         left: 10px;
         z-index: 100;
-        background-color: white;
+        background-color: rgba(37, 37, 37, 0.962);
         padding: 10px;
         border-radius: 5px;
         cursor: pointer;
-        border: 1px solid #0079c1;
+        border: 1px solid #a3a3a3;
+        color: hsl(0, 0%, 100%); /* Warna teks input */
         }
+        
+        #goToBtn {
+            margin-bottom: 5px;
+            background-color: rgba(37, 37, 37, 0.962);
+            color: hsl(0, 0%, 100%); /* Warna teks input */
+        }
+
+        input {
+            width: 50%;
+            padding: 2px;
+            margin: 2px 0;
+            border: 1px solid hsl(0, 0%, 100%);
+            border-radius: 5px;
+            background-color: rgba(250, 249, 249, 0.962);
     </style>
 </head>
 <body>
@@ -45,9 +61,9 @@
 
     <div class="coordinate-input" id="coordinateInput">
         <label for="latitude">Latitude:</label>
-        <input type="text" id="latitude" placeholder="Enter Latitude"><br>
+        <input type="text" id="latitude" placeholder="Enter -7.9910"><br>
         <label for="longitude">Longitude:</label>
-        <input type="text" id="longitude" placeholder="Enter Longitude"><br>
+        <input type="text" id="longitude" placeholder="Enter 110.76543"><br>
         <button id="goToBtn">Go To</button>
      </div>
     <script>
@@ -59,8 +75,9 @@
             "esri/widgets/BasemapToggle",
             "esri/widgets/Expand",
             "esri/widgets/LayerList",
-            "esri/widgets/Locate"
-        ], (Map, MapView, GeoJSONLayer, GroupLayer, BasemapToggle,Expand,LayerList, Locate) => {
+            "esri/widgets/Locate",
+            "esri/Graphic",
+        ], (Map, MapView, GeoJSONLayer, GroupLayer, BasemapToggle,Expand,LayerList, Locate, Graphic) => {
 
             // Warna untuk setiap kategori NAMOBJ
             const renderer_RTRW = {
@@ -654,10 +671,75 @@
                 }
             });
 
+            // Layer Persil Jenawi
+            const Jenawi = new GeoJSONLayer({
+                url: "https://raw.githubusercontent.com/codemrc/KRA_RTR/main/jenawi.json",
+                title: "Persil Jenawi",
+                renderer: {
+                    type: "simple",
+                    symbol: {
+                        type: "simple-fill",
+                        color: [255, 255, 255, 0],  // Transparan 0%
+                        outline: {
+                            color: [211, 211, 211, 0.6], // Outline abu-abu
+                            width: 1
+                        }
+                    }
+                },
+                visible: true,
+                popupTemplate: {
+                    title: "Persil Jenawi",
+                    content: `
+                        <b>Kategori:</b>
+                        <ul>
+                            <li><b>NIB:</b> {NIB}</li>
+                            <li><b>LUAS:</b> {LUASTERTUL} <b> m2<b></li>
+                            <li><b>TIPE HAK:</b> {TIPEHAK}</li>
+                            <li><b>KELURAHAN:</b> {KELURAHAN}</li>
+                            <li><b>KECAMATAN:</b> {KECAMATAN}</li>
+                        </ul>
+                    `
+                }
+            });
+
+            
+            // Layer Persil Kerjo
+            const Kerjo = new GeoJSONLayer({
+                url: "https://raw.githubusercontent.com/codemrc/KRA_RTR/main/kerjo.json",
+                title: "Persil Kerjo",
+                renderer: {
+                    type: "simple",
+                    symbol: {
+                        type: "simple-fill",
+                        color: [255, 255, 255, 0],  // Transparan 0%
+                        outline: {
+                            color: [211, 211, 211, 0.6], // Outline abu-abu
+                            width: 1
+                        }
+                    }
+                },
+                visible: true,
+                popupTemplate: {
+                    title: "Persil Kerjo",
+                    content: `
+                        <b>Kategori:</b>
+                        <ul>
+                            <li><b>NIB:</b> {NIB}</li>
+                            <li><b>LUAS:</b> {LUASTERTUL} <b> m2<b></li>
+                            <li><b>TIPE HAK:</b> {TIPEHAK}</li>
+                            <li><b>KELURAHAN:</b> {KELURAHAN}</li>
+                            <li><b>KECAMATAN:</b> {KECAMATAN}</li>
+                        </ul>
+                    `
+                }
+            });
+
             // GroupLayer untuk sub-layer Persil
             const persilGroup = new GroupLayer({
                 title: "Persil",
-                layers: [Jatipuro,Jumapolo,Jatiyoso,Jumantono,Matesih,Ngargoyoso,Mojogedang,Karangpandan, Tasikmadu, Tawangmangu,Jaten,Kebakkramat,Karanganyar,Gondangrejo,Colomadu]
+                layers: [Jaten,Kerjo,Jatipuro,Jumapolo,Jatiyoso,Jumantono,Matesih,Ngargoyoso,
+                Mojogedang,Karangpandan, Tasikmadu, Tawangmangu,Jaten,Kebakkramat,
+                Karanganyar,Gondangrejo,Colomadu]
             });
 
             // Menambahkan semua layer ke map dalam urutan yang diinginkan
@@ -734,7 +816,7 @@
 
                     var markerSymbol = {
                         type: "simple-marker", // Jenis simbol
-                        color: [226, 119, 40], // Warna pin (misalnya oranye)
+                        color: [255, 255, 0], // Warna pin (misalnya kuning)
                         outline: {color: [255, 255, 255], // Warna outline pin (putih)
                                   width: 2
                                   }
