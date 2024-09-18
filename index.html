@@ -18,7 +18,7 @@
         /* Search Container di kanan atas */
         .search-container {
             position: absolute;
-            top: 470px;
+            top: 400px;
             left: 120px;
             z-index: 150;
             background-color: rgba(48, 48, 48, 0.834);
@@ -77,6 +77,54 @@
             color: hsl(0, 0%, 100%);
         }
 
+                /* Style untuk dropdown Kecamatan dan Kelurahan */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+            width: 90%; /* Sesuaikan dengan lebar input yang sudah ada */
+            margin: 5px 0;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 100%;
+            max-height: 150px; /* Batas tinggi dropdown untuk kelurahan panjang */
+            overflow-y: auto;  /* Menambahkan scrollbar jika terlalu banyak item */
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            color: black; /* Warna teks */
+            border: 1px solid #ccc; /* Border pada dropdown */
+        }
+
+        .dropdown-content div {
+            padding: 10px;
+            text-decoration: none;
+            display: block;
+            cursor: pointer;
+        }
+
+        .dropdown-content div:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Dropdown muncul ketika di-hover */
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        /* Style input untuk dropdown Kecamatan dan Kelurahan */
+        #kecamatanInput, #kelurahanInput {
+        width: 90%; /* Sesuaikan dengan lebar input lainnya */
+        padding: 5px;
+        margin: 5px 0;
+        border: 1px solid #dfe0e0;
+        border-radius: 5px;
+        background-color: #3d3d3d; /* Warna latar belakang input */
+        color: white; /* Warna teks */
+        }
+
         /*cari kooridnat*/
         .coordinate-input {
         position: absolute;
@@ -131,16 +179,20 @@
         <button id="toggleSearchBtn">Search NIB</button>
         <div id="searchForm" class="search-form">
 
-        <label for="searchKecamatan"class="white-label" >Kecamatan:</label>
-        <input type="text" id="searchKecamatan" placeholder="Masukkan Kecamatan">
-            
-        <label for="searchKelurahan"class="white-label" >Kelurahan:</label>
-        <input type="text" id="searchKelurahan" placeholder="Masukkan Kelurahan">
-            
-        <label for="searchNIB" class="white-label" >NIB:</label>
-        <input type="text" id="searchNIB" placeholder="Masukkan NIB">
-            
-        <button id="searchBtn">Cari</button>
+         <!-- Dropdown Kecamatan -->
+         <label for="kecamatanInput" class="white-label">Kecamatan:</label>
+         <input type="text" id="kecamatanInput" placeholder="Pilih Kecamatan" readonly>
+         <div class="dropdown-content" id="kecamatanList"></div>
+         
+         <!-- Dropdown Kelurahan -->
+         <label for="kelurahanInput" class="white-label">Kelurahan:</label>
+         <input type="text" id="kelurahanInput" placeholder="Pilih Kelurahan" readonly disabled>
+         <div class="dropdown-content" id="kelurahanList"></div>
+         
+         <label for="searchNIB" class="white-label">NIB:</label>
+         <input type="text" id="searchNIB" placeholder="Masukkan NIB">
+         
+         <button id="searchBtn">Cari</button>
         </div>
     </div>
       
@@ -215,6 +267,23 @@
                 title: "RTRW Kabupaten Karanganyar 2019",
                 renderer: renderer_RTRW,
                 visible: true,
+                labelingInfo: [{
+                labelExpressionInfo: { expression: "$feature.NAMOBJ" }, // Menampilkan label berdasarkan field NAMOBJ
+                symbol: {
+                    type: "text", // Tipe simbol teks untuk label
+                    color: "black", // Warna teks
+                    font: {
+                        family: "sans-serif",
+                        size: 12,
+                        weight: "normal"
+                    }
+                },
+                minScale: 10000, // Label muncul pada atau di bawah skala 1:10.000
+                labelPlacement: "center", // Penempatan label di tengah poligon
+                maxScale: 0, // Agar label muncul pada semua skala yang lebih besar dari 1:10.000
+                featureRotation: true // Memastikan label tetap terorientasi dengan baik saat poligon berputar
+            }],
+
                 popupTemplate: {
                     title: "{NAMOBJ}",
                     content: "Kategori: {NAMOBJ}"
@@ -292,6 +361,27 @@
                     `
                 }
             });
+            
+            // Layer Penggunaan Tanah
+            const PenggunaanTanah = new GeoJSONLayer({
+                url: "https://raw.githubusercontent.com/codemrc/KRA_RTR/main/penggunaan%20tanah.json",
+                title: "Pengunaan Tanah Karanganyar",
+                renderer: {
+                    type: "simple",
+                    symbol: {
+                        type: "simple-fill",
+                        color: [255, 255, 0, 0.1],  // Kuning dengan transparansi
+                        outline: {
+                            color: [0, 0, 0, 1] // Outline hitam
+                        }
+                    }
+                },
+                visible: true,
+                popupTemplate: {
+                    title: "Penggunaan Tanah",
+                    content: "Kategori: {PTNOBJNAME}"
+                }
+            });
 
             // Layer Persil Colomadu
             const Colomadu = new GeoJSONLayer({
@@ -321,7 +411,29 @@
                             <li><b>KECAMATAN:</b> {KECAMATAN}</li>
                         </ul>
                     `
-                }
+                },
+                // Konfigurasi labeling untuk menampilkan NIB pada zoom level 20
+                labelingInfo: [
+                        {
+                            labelExpressionInfo: {
+                                expression: "$feature.NIB"
+                            },
+                            symbol: {
+                                type: "text",  // Simbol teks untuk label
+                                color: [0, 0, 0, 0.4],  // Warna hitam dengan transparansi 60% (Alpha = 0.4)
+                                haloColor: "white",  // Warna halo di sekeliling teks
+                                haloSize: "0.1px",  // Ukuran halo
+                                font: {
+                                    size: 10,  // Ukuran font
+                                    //weight: "bold"
+                                    family: "Cursive"  // Jenis font cursive
+                                }
+                            },
+                            // Tentukan skala minimal untuk menampilkan label
+                            minScale: 1000,  // Skala yang sesuai untuk zoom level 20
+                            labelPlacement: "center-center"
+                        }
+                    ]
             });
 
             // Layer Persil Karanganyar
@@ -352,7 +464,30 @@
                             <li><b>KECAMATAN:</b> {KECAMATAN}</li>
                         </ul>
                     `
-                }
+                },
+                // Konfigurasi labeling untuk menampilkan NIB pada zoom level 20
+                labelingInfo: [
+                        {
+                            labelExpressionInfo: {
+                                expression: "$feature.NIB"
+                            },
+                            symbol: {
+                                type: "text",  // Simbol teks untuk label
+                                color: [0, 0, 0, 0.4],  // Warna hitam dengan transparansi 60% (Alpha = 0.4)
+                                haloColor: "white",  // Warna halo di sekeliling teks
+                                haloSize: "0.1px",  // Ukuran halo
+                                font: {
+                                    size: 10,  // Ukuran font
+                                    //weight: "bold"
+                                    family: "Cursive"  // Jenis font cursive
+                                }
+                            },
+                            // Tentukan skala minimal untuk menampilkan label
+                            minScale: 1000,  // Skala yang sesuai untuk zoom level 20
+                            labelPlacement: "center-center"
+                        }
+                    ]
+
             });
 
             // Layer Persil Tasikmadu
@@ -383,7 +518,29 @@
                             <li><b>KECAMATAN:</b> {KECAMATAN}</li>
                         </ul>
                     `
-                }
+                },
+                // Konfigurasi labeling untuk menampilkan NIB pada zoom level 20
+                labelingInfo: [
+                        {
+                            labelExpressionInfo: {
+                                expression: "$feature.NIB"
+                            },
+                            symbol: {
+                                type: "text",  // Simbol teks untuk label
+                                color: [0, 0, 0, 0.4],  // Warna hitam dengan transparansi 60% (Alpha = 0.4)
+                                haloColor: "white",  // Warna halo di sekeliling teks
+                                haloSize: "0.1px",  // Ukuran halo
+                                font: {
+                                    size: 10,  // Ukuran font
+                                    //weight: "bold"
+                                    family: "Cursive"  // Jenis font cursive
+                                }
+                            },
+                            // Tentukan skala minimal untuk menampilkan label
+                            minScale: 1000,  // Skala yang sesuai untuk zoom level 20
+                            labelPlacement: "center-center"
+                        }
+                    ]
             });
 
             // Layer Persil Tawangmangu
@@ -414,7 +571,29 @@
                             <li><b>KECAMATAN:</b> {KECAMATAN}</li>
                         </ul>
                     `
-                }
+                },
+                // Konfigurasi labeling untuk menampilkan NIB pada zoom level 20
+                labelingInfo: [
+                        {
+                            labelExpressionInfo: {
+                                expression: "$feature.NIB"
+                            },
+                            symbol: {
+                                type: "text",  // Simbol teks untuk label
+                                color: [0, 0, 0, 0.4],  // Warna hitam dengan transparansi 60% (Alpha = 0.4)
+                                haloColor: "white",  // Warna halo di sekeliling teks
+                                haloSize: "0.1px",  // Ukuran halo
+                                font: {
+                                    size: 10,  // Ukuran font
+                                    //weight: "bold"
+                                    family: "Cursive"  // Jenis font cursive
+                                }
+                            },
+                            // Tentukan skala minimal untuk menampilkan label
+                            minScale: 1000,  // Skala yang sesuai untuk zoom level 20
+                            labelPlacement: "center-center"
+                        }
+                    ]
             });
 
             // Layer Persil Jaten
@@ -445,7 +624,29 @@
                             <li><b>KECAMATAN:</b> {KECAMATAN}</li>
                         </ul>
                     `
-                }
+                },
+                // Konfigurasi labeling untuk menampilkan NIB pada zoom level 20
+                labelingInfo: [
+                        {
+                            labelExpressionInfo: {
+                                expression: "$feature.NIB"
+                            },
+                            symbol: {
+                                type: "text",  // Simbol teks untuk label
+                                color: [0, 0, 0, 0.4],  // Warna hitam dengan transparansi 60% (Alpha = 0.4)
+                                haloColor: "white",  // Warna halo di sekeliling teks
+                                haloSize: "0.1px",  // Ukuran halo
+                                font: {
+                                    size: 10,  // Ukuran font
+                                    //weight: "bold"
+                                    family: "Cursive"  // Jenis font cursive
+                                }
+                            },
+                            // Tentukan skala minimal untuk menampilkan label
+                            minScale: 1000,  // Skala yang sesuai untuk zoom level 20
+                            labelPlacement: "center-center"
+                        }
+                    ]
             });
 
              // Layer Persil Kebakkramat
@@ -476,7 +677,29 @@
                             <li><b>KECAMATAN:</b> {KECAMATAN}</li>
                         </ul>
                     `
-                }
+                },
+                // Konfigurasi labeling untuk menampilkan NIB pada zoom level 20
+                labelingInfo: [
+                        {
+                            labelExpressionInfo: {
+                                expression: "$feature.NIB"
+                            },
+                            symbol: {
+                                type: "text",  // Simbol teks untuk label
+                                color: [0, 0, 0, 0.4],  // Warna hitam dengan transparansi 60% (Alpha = 0.4)
+                                haloColor: "white",  // Warna halo di sekeliling teks
+                                haloSize: "0.1px",  // Ukuran halo
+                                font: {
+                                    size: 10,  // Ukuran font
+                                    //weight: "bold"
+                                    family: "Cursive"  // Jenis font cursive
+                                }
+                            },
+                            // Tentukan skala minimal untuk menampilkan label
+                            minScale: 1000,  // Skala yang sesuai untuk zoom level 20
+                            labelPlacement: "center-center"
+                        }
+                    ]
             });
 
              // Layer Persil Gondangrejo
@@ -507,7 +730,29 @@
                             <li><b>KECAMATAN:</b> {KECAMATAN}</li>
                         </ul>
                     `
-                }
+                },
+                // Konfigurasi labeling untuk menampilkan NIB pada zoom level 20
+                labelingInfo: [
+                        {
+                            labelExpressionInfo: {
+                                expression: "$feature.NIB"
+                            },
+                            symbol: {
+                                type: "text",  // Simbol teks untuk label
+                                color: [0, 0, 0, 0.4],  // Warna hitam dengan transparansi 60% (Alpha = 0.4)
+                                haloColor: "white",  // Warna halo di sekeliling teks
+                                haloSize: "0.1px",  // Ukuran halo
+                                font: {
+                                    size: 10,  // Ukuran font
+                                    //weight: "bold"
+                                    family: "Cursive"  // Jenis font cursive
+                                }
+                            },
+                            // Tentukan skala minimal untuk menampilkan label
+                            minScale: 1000,  // Skala yang sesuai untuk zoom level 20
+                            labelPlacement: "center-center"
+                        }
+                    ]
             });
 
              // Layer Persil Jatipuro
@@ -538,7 +783,29 @@
                             <li><b>KECAMATAN:</b> {KECAMATAN}</li>
                         </ul>
                     `
-                }
+                },
+                // Konfigurasi labeling untuk menampilkan NIB pada zoom level 20
+                labelingInfo: [
+                        {
+                            labelExpressionInfo: {
+                                expression: "$feature.NIB"
+                            },
+                            symbol: {
+                                type: "text",  // Simbol teks untuk label
+                                color: [0, 0, 0, 0.4],  // Warna hitam dengan transparansi 60% (Alpha = 0.4)
+                                haloColor: "white",  // Warna halo di sekeliling teks
+                                haloSize: "0.1px",  // Ukuran halo
+                                font: {
+                                    size: 10,  // Ukuran font
+                                    //weight: "bold"
+                                    family: "Cursive"  // Jenis font cursive
+                                }
+                            },
+                            // Tentukan skala minimal untuk menampilkan label
+                            minScale: 1000,  // Skala yang sesuai untuk zoom level 20
+                            labelPlacement: "center-center"
+                        }
+                    ]
             });
 
             // Layer Persil Karangpandan
@@ -569,7 +836,29 @@
                             <li><b>KECAMATAN:</b> {KECAMATAN}</li>
                         </ul>
                     `
-                }
+                },
+                // Konfigurasi labeling untuk menampilkan NIB pada zoom level 20
+                labelingInfo: [
+                        {
+                            labelExpressionInfo: {
+                                expression: "$feature.NIB"
+                            },
+                            symbol: {
+                                type: "text",  // Simbol teks untuk label
+                                color: [0, 0, 0, 0.4],  // Warna hitam dengan transparansi 60% (Alpha = 0.4)
+                                haloColor: "white",  // Warna halo di sekeliling teks
+                                haloSize: "0.1px",  // Ukuran halo
+                                font: {
+                                    size: 10,  // Ukuran font
+                                    //weight: "bold"
+                                    family: "Cursive"  // Jenis font cursive
+                                }
+                            },
+                            // Tentukan skala minimal untuk menampilkan label
+                            minScale: 1000,  // Skala yang sesuai untuk zoom level 20
+                            labelPlacement: "center-center"
+                        }
+                    ]
             });
             
              // Layer Persil Mojogedang
@@ -600,7 +889,29 @@
                             <li><b>KECAMATAN:</b> {KECAMATAN}</li>
                         </ul>
                     `
-                }
+                },
+                // Konfigurasi labeling untuk menampilkan NIB pada zoom level 20
+                labelingInfo: [
+                        {
+                            labelExpressionInfo: {
+                                expression: "$feature.NIB"
+                            },
+                            symbol: {
+                                type: "text",  // Simbol teks untuk label
+                                color: [0, 0, 0, 0.4],  // Warna hitam dengan transparansi 60% (Alpha = 0.4)
+                                haloColor: "white",  // Warna halo di sekeliling teks
+                                haloSize: "0.1px",  // Ukuran halo
+                                font: {
+                                    size: 10,  // Ukuran font
+                                    //weight: "bold"
+                                    family: "Cursive"  // Jenis font cursive
+                                }
+                            },
+                            // Tentukan skala minimal untuk menampilkan label
+                            minScale: 1000,  // Skala yang sesuai untuk zoom level 20
+                            labelPlacement: "center-center"
+                        }
+                    ]
             });
 
             // Layer Persil Jumantono
@@ -631,7 +942,29 @@
                             <li><b>KECAMATAN:</b> {KECAMATAN}</li>
                         </ul>
                     `
-                }
+                },
+                // Konfigurasi labeling untuk menampilkan NIB pada zoom level 20
+                labelingInfo: [
+                        {
+                            labelExpressionInfo: {
+                                expression: "$feature.NIB"
+                            },
+                            symbol: {
+                                type: "text",  // Simbol teks untuk label
+                                color: [0, 0, 0, 0.4],  // Warna hitam dengan transparansi 60% (Alpha = 0.4)
+                                haloColor: "white",  // Warna halo di sekeliling teks
+                                haloSize: "0.1px",  // Ukuran halo
+                                font: {
+                                    size: 10,  // Ukuran font
+                                    //weight: "bold"
+                                    family: "Cursive"  // Jenis font cursive
+                                }
+                            },
+                            // Tentukan skala minimal untuk menampilkan label
+                            minScale: 1000,  // Skala yang sesuai untuk zoom level 20
+                            labelPlacement: "center-center"
+                        }
+                    ]
             });
 
             // Layer Persil Ngargoyoso
@@ -662,7 +995,29 @@
                             <li><b>KECAMATAN:</b> {KECAMATAN}</li>
                         </ul>
                     `
-                }
+                },
+                // Konfigurasi labeling untuk menampilkan NIB pada zoom level 20
+                labelingInfo: [
+                        {
+                            labelExpressionInfo: {
+                                expression: "$feature.NIB"
+                            },
+                            symbol: {
+                                type: "text",  // Simbol teks untuk label
+                                color: [0, 0, 0, 0.4],  // Warna hitam dengan transparansi 60% (Alpha = 0.4)
+                                haloColor: "white",  // Warna halo di sekeliling teks
+                                haloSize: "0.1px",  // Ukuran halo
+                                font: {
+                                    size: 10,  // Ukuran font
+                                    //weight: "bold"
+                                    family: "Cursive"  // Jenis font cursive
+                                }
+                            },
+                            // Tentukan skala minimal untuk menampilkan label
+                            minScale: 1000,  // Skala yang sesuai untuk zoom level 20
+                            labelPlacement: "center-center"
+                        }
+                    ]
             });
 
             // Layer Persil Jumapolo
@@ -693,7 +1048,29 @@
                             <li><b>KECAMATAN:</b> {KECAMATAN}</li>
                         </ul>
                     `
-                }
+                },
+                // Konfigurasi labeling untuk menampilkan NIB pada zoom level 20
+                labelingInfo: [
+                        {
+                            labelExpressionInfo: {
+                                expression: "$feature.NIB"
+                            },
+                            symbol: {
+                                type: "text",  // Simbol teks untuk label
+                                color: [0, 0, 0, 0.4],  // Warna hitam dengan transparansi 60% (Alpha = 0.4)
+                                haloColor: "white",  // Warna halo di sekeliling teks
+                                haloSize: "0.1px",  // Ukuran halo
+                                font: {
+                                    size: 10,  // Ukuran font
+                                    //weight: "bold"
+                                    family: "Cursive"  // Jenis font cursive
+                                }
+                            },
+                            // Tentukan skala minimal untuk menampilkan label
+                            minScale: 1000,  // Skala yang sesuai untuk zoom level 20
+                            labelPlacement: "center-center"
+                        }
+                    ]
             });
 
              // Layer Persil Jatiyoso
@@ -724,7 +1101,29 @@
                             <li><b>KECAMATAN:</b> {KECAMATAN}</li>
                         </ul>
                     `
-                }
+                },
+                // Konfigurasi labeling untuk menampilkan NIB pada zoom level 20
+                labelingInfo: [
+                        {
+                            labelExpressionInfo: {
+                                expression: "$feature.NIB"
+                            },
+                            symbol: {
+                                type: "text",  // Simbol teks untuk label
+                                color: [0, 0, 0, 0.4],  // Warna hitam dengan transparansi 60% (Alpha = 0.4)
+                                haloColor: "white",  // Warna halo di sekeliling teks
+                                haloSize: "0.1px",  // Ukuran halo
+                                font: {
+                                    size: 10,  // Ukuran font
+                                    //weight: "bold"
+                                    family: "Cursive"  // Jenis font cursive
+                                }
+                            },
+                            // Tentukan skala minimal untuk menampilkan label
+                            minScale: 1000,  // Skala yang sesuai untuk zoom level 20
+                            labelPlacement: "center-center"
+                        }
+                    ]
             });
 
             // Layer Persil Matesih
@@ -755,7 +1154,29 @@
                             <li><b>KECAMATAN:</b> {KECAMATAN}</li>
                         </ul>
                     `
-                }
+                },
+                // Konfigurasi labeling untuk menampilkan NIB pada zoom level 20
+                labelingInfo: [
+                        {
+                            labelExpressionInfo: {
+                                expression: "$feature.NIB"
+                            },
+                            symbol: {
+                                type: "text",  // Simbol teks untuk label
+                                color: [0, 0, 0, 0.4],  // Warna hitam dengan transparansi 60% (Alpha = 0.4)
+                                haloColor: "white",  // Warna halo di sekeliling teks
+                                haloSize: "0.1px",  // Ukuran halo
+                                font: {
+                                    size: 10,  // Ukuran font
+                                    //weight: "bold"
+                                    family: "Cursive"  // Jenis font cursive
+                                }
+                            },
+                            // Tentukan skala minimal untuk menampilkan label
+                            minScale: 1000,  // Skala yang sesuai untuk zoom level 20
+                            labelPlacement: "center-center"
+                        }
+                    ]
             });
 
             // Layer Persil Jenawi
@@ -786,7 +1207,29 @@
                             <li><b>KECAMATAN:</b> {KECAMATAN}</li>
                         </ul>
                     `
-                }
+                },
+                // Konfigurasi labeling untuk menampilkan NIB pada zoom level 20
+                labelingInfo: [
+                        {
+                            labelExpressionInfo: {
+                                expression: "$feature.NIB"
+                            },
+                            symbol: {
+                                type: "text",  // Simbol teks untuk label
+                                color: [0, 0, 0, 0.4],  // Warna hitam dengan transparansi 60% (Alpha = 0.4)
+                                haloColor: "white",  // Warna halo di sekeliling teks
+                                haloSize: "0.1px",  // Ukuran halo
+                                font: {
+                                    size: 10,  // Ukuran font
+                                    //weight: "bold"
+                                    family: "Cursive"  // Jenis font cursive
+                                }
+                            },
+                            // Tentukan skala minimal untuk menampilkan label
+                            minScale: 1000,  // Skala yang sesuai untuk zoom level 20
+                            labelPlacement: "center-center"
+                        }
+                    ]
             });
 
             
@@ -818,7 +1261,30 @@
                             <li><b>KECAMATAN:</b> {KECAMATAN}</li>
                         </ul>
                     `
-                }
+                },
+                // Konfigurasi labeling untuk menampilkan NIB pada zoom level 20
+                labelingInfo: [
+                        {
+                            labelExpressionInfo: {
+                                expression: "$feature.NIB"
+                            },
+                            symbol: {
+                                type: "text",  // Simbol teks untuk label
+                                color: [0, 0, 0, 0.4],  // Warna hitam dengan transparansi 60% (Alpha = 0.4)
+                                haloColor: "white",  // Warna halo di sekeliling teks
+                                haloSize: "0.1px",  // Ukuran halo
+                                font: {
+                                    size: 10,  // Ukuran font
+                                    //weight: "bold"
+                                    family: "Cursive"  // Jenis font cursive
+                                }
+                            },
+                            // Tentukan skala minimal untuk menampilkan label
+                            minScale: 1000,  // Skala yang sesuai untuk zoom level 20
+                            labelPlacement: "center-center"
+                        }
+                    ]
+
             });
 
             // GroupLayer untuk sub-layer Persil
@@ -833,14 +1299,16 @@
             map.add(persilGroup);
             map.add(lereng);
             map.add(kemampuanTanah);
+            map.add(PenggunaanTanah)
             map.add(LSD);
             map.add(RTRW);
+            
             // Menambahkan LayerList untuk menampilkan semua layer kecuali layer "Persil"
             const layerList = new LayerList({
                 view: view,
                 listItemCreatedFunction: (event) => {
                 // Menyembunyikan layer LSD, kemampuanTanah, dan lereng dari LayerList
-                const hiddenLayers = [LSD, kemampuanTanah, lereng,persilGroup];
+                const hiddenLayers = [LSD, PenggunaanTanah,kemampuanTanah, lereng,persilGroup];
                 if (hiddenLayers.includes(event.item.layer)) 
                     {event.item.visible = false;}
                 }
@@ -923,121 +1391,188 @@
                     }
                     });
             
-             // Toggle untuk Search Container
-                var toggleSearchContainer = document.getElementById("toggleSearchContainer");
-                var searchContainer = document.getElementById("searchContainer");
+             // Toggle untuk Search Container cari NIB
+            var toggleSearchContainer = document.getElementById("toggleSearchContainer");
+            var searchContainer = document.getElementById("searchContainer");
 
-                toggleSearchContainer.addEventListener("click", function() {
-                    if (searchContainer.style.display === "none") {
-                        searchContainer.style.display = "block";
-                        toggleSearchContainer.innerText = "<< NIB";
-                    } else {
-                        searchContainer.style.display = "none";
-                        toggleSearchContainer.innerText = "NIB";
-                    }
-                });
-
-                // Toggle search form di dalam Search Container
-                var toggleSearchBtn = document.getElementById("toggleSearchBtn");
-                var searchForm = document.getElementById("searchForm");
-
-                toggleSearchBtn.addEventListener("click", function () {
-                    if (searchForm.style.display === "none") {
-                        searchForm.style.display = "block";
-                        toggleSearchBtn.innerText = "Minimize Search NIB";
-                    } else {
-                        searchForm.style.display = "none";
-                        toggleSearchBtn.innerText = "Search NIB";
-                    }
-                });
- 
-            // Fungsi pencarian
-                document.getElementById("searchBtn").addEventListener("click", function() {
-                var searchKecamatan = document.getElementById("searchKecamatan").value;
-                var searchKelurahan = document.getElementById("searchKelurahan").value;
-                var searchNIB = document.getElementById("searchNIB").value;
-
-                // Debugging untuk melihat input pengguna
-                console.log("Input Kecamatan: ", searchKecamatan);
-                console.log("Input Kelurahan: ", searchKelurahan);
-                console.log("Input NIB: ", searchNIB);
-
-                // Filter layer berdasarkan kriteria pencarian
-                var whereClause = [];
-
-                if (searchKecamatan) {
-                    whereClause.push(`KECAMATAN LIKE '%${searchKecamatan}%'`);
+            toggleSearchContainer.addEventListener("click", function() {
+                if (searchContainer.style.display === "none") {
+                    searchContainer.style.display = "block";
+                    toggleSearchContainer.innerText = "<< NIB";
+                } else {
+                    searchContainer.style.display = "none";
+                    toggleSearchContainer.innerText = "NIB";
                 }
-                if (searchKelurahan) {
-                    whereClause.push(`KELURAHAN LIKE '%${searchKelurahan}%'`);
-                }
-                if (searchNIB) {
-                    whereClause.push(`NIB LIKE '%${searchNIB}%'`);
-                }
-                var finalWhereClause = whereClause.join(" AND ");
-
-                // Definisikan fungsi query untuk kedua layer
-                    function queryLayer(layer) {
-                    return layer.queryFeatures({
-                        where: finalWhereClause,  // Gunakan klausa where yang sama
-                        outFields: ["NIB", "KECAMATAN", "KELURAHAN", "LUASTERTUL", "TIPEHAK"], // Field-field yang diambil
-                        returnGeometry: true      // Penting untuk mendapatkan geometri untuk zoom
-                    });
-                }
-
-                // Query kedua layer (Jenawi,Kerjo,Jatipuro,Jumapolo,Jatiyoso,Jumantono,Matesih,Ngargoyoso,
-                //Mojogedang,Karangpandan, Tasikmadu, Tawangmangu,Jaten,Kebakkramat,
-                //Karanganyar,Gondangrejo,Colomadu)
-                Promise.all([queryLayer(Jenawi),queryLayer(Kerjo),queryLayer(Jatipuro),queryLayer(Jumapolo),queryLayer(Jatiyoso),
-                queryLayer(Jumantono),queryLayer(Matesih),queryLayer(Ngargoyoso),queryLayer(Mojogedang),queryLayer(Karangpandan),
-                queryLayer(Tasikmadu),queryLayer(Tawangmangu),queryLayer(Jaten),queryLayer(Kebakkramat),queryLayer(Karanganyar),
-                queryLayer(Gondangrejo),queryLayer(Colomadu)]).then(function(results) {
-                    var allFeatures = [];
-
-                    // Gabungkan semua fitur dari hasil query
-                    results.forEach(function(result) {
-                        allFeatures = allFeatures.concat(result.features);
-                    });
-
-                    if (allFeatures.length > 0) {
-                        // Dapatkan geometri fitur hasil pertama dan lakukan zoom
-                        var feature = allFeatures[0];
-                        view.goTo({
-                            target: feature.geometry,
-                            zoom: 19 // Atur zoom level, sesuaikan sesuai kebutuhan
-                        });then(function() {
-                       // Tampilkan popup setelah zoom
-                            view.popup.open({
-                                title: "Detail Bidang",
-                                location: feature.geometry,  // Lokasi untuk menampilkan popup
-                                content: `
-                                <b>NIB:</b> ${feature.attributes.NIB}<br>
-                                <b>Kecamatan:</b> ${feature.attributes.KECAMATAN}<br>
-                                <b>Kelurahan:</b> ${feature.attributes.KELURAHAN}<br>
-                                <b>Luas:</b> ${feature.attributes.LUASTERTUL} m2<br>
-                                <b>Tipe Hak:</b> ${feature.attributes.TIPEHAK}
-                                 `
-                            });
-                            // Highlight atau select bidang
-                            var highlight = view.highlight([feature]);
-                
-                            // Debugging
-                            console.log("Ditemukan fitur: ", feature.attributes);
-
-                            // Membuat fitur tetap terseleksi selama 3 detik
-                            setTimeout(function() {
-                            highlight.remove(); // Menghilangkan highlight
-                            }, 3000);
-                        });
-                        
-                    } else {
-                        // Jika tidak ada fitur yang ditemukan
-                        alert("Tidak ada hasil yang cocok dengan pencarian Anda.");
-                    }
-                }).catch(function(error) {
-                    console.error("Error saat query fitur: ", error);
-                });
             });
+
+            // Toggle search form di dalam Search Container
+            var toggleSearchBtn = document.getElementById("toggleSearchBtn");
+            var searchForm = document.getElementById("searchForm");
+
+            toggleSearchBtn.addEventListener("click", function () {
+                if (searchForm.style.display === "none") {
+                    searchForm.style.display = "block";
+                    toggleSearchBtn.innerText = "Minimize Search NIB";
+                } else {
+                    searchForm.style.display = "none";
+                    toggleSearchBtn.innerText = "Search NIB";
+                }
+            });
+
+            // Data kecamatan dan kelurahan
+            var dataWilayah = {
+                "Karanganyar": ["Bejen", "Bolong","Cangakan","Delingan","Gayamdompo", "Gedong", "Jantiharjo", "Jungke", "Karanganyar", "Lalung", "Popongan", "Tegalgede"],
+                "Tasikmadu": ["Buran", "Gaum", "Kalijirak", "Karangmojo", "Kaling","Ngijo","Pandeyan", "Papahan", "Suruh", "Wonolopo"],
+                "Colomadu": ["Baturan","Blulukan", "Bolon", "Gajahan","Gawanan", "Gedongan", "Klodran","Malangjiwan", "Ngasem", "Paulan", "Tohudan"],
+                "Gondangrejo": ["Bulurejo","Dayu","Jatikuwung", "Jeruksawit", "Karangturi","Kragan","Krendowahono","Plesungan","Rejoari","Selokaton",
+                                "Tuban", "Wonorejo", "Wonosari"],
+                "Jaten": ["Brujul", "Dagen", "Jaten","Jati", "Jetis", "Ngringo", "Sroyo", "Suruhkalang"],
+                "Jatipuro": [ "Jatiharjo","Jatikuwung","Jatimulyo", "Jatipuro","Jatipurwo","Jatiroyo", "Jatisobo","Jatisuko","Jatiwarno","Ngepungsari" ],
+                "Jatiyoso": ["Beruk","Jatisawit","Jatiyoso", "Karangsari","Petung" ,"Tlobo","Wonokeling","Wonorejo", "Wukirsawit"],
+                "Jenawi": ["Anggrasmanis","Balong", "Gumeng","Jenawi","Lempong", "Menjing", "Seloromo", "Sidomukti", "Trengguli"],
+                "Jumantono": ["Blorong","Gemantar","Genengan","Kebak","Ngunut","Sambirejo","Sedayu","Sringin","Sukosari","Tugu","Tunggulrejo"],
+                "Jumapolo": ["Bakalan","Giriwondo","Jatirejo","Jumantoro","Jumapolo","Kadipiro","Karangbangun","Kedawung","Kwangsan","Lemahbang","Paseban","Ploso"],
+                "Kebakkramat": ["Alastuwo","Banjarharjo","Kaliwuluh","Kebak","Kemiri","Macanan","Malanggaten","Nangsri",  "Pulosari","Waru"],
+                "Kerjo": ["Botok","Ganten","Gempolan","Karangrejo","Kuto","Kwadungan","Plosorejo","Sumberrejo","Tamansari","Tawangsari" ],
+                "Matesih": ["Dawung","Gantiwarno","Girilayu","Karangbangun","Koripan","Matesih", "Ngadiluwih", "Pablengan", "Plosorejo"],
+                "Mojogedang": ["Buntar","Gebyog","Gentungan", "Kaliboto", "Kedungjeruk","Mojogedang", "Mojoroto", "Munggur","Ngadirejo","Pendem","Pereng","Pojok","Sewurejo"],
+                "Ngargoyoso": ["Berjo","Dukuh","Girimulyo","Jatirejo", "Kemunig","Ngargoyoso","Nglegok","Puntukrejo","Segorogunung"],
+                "Tawangmangu": ["Bandardawung","Blumbang", "Gondosuli","Kalisoro","Karanglo","Nglebak","Plumbon","Sepanjang","Tawangmangu","Tengklik"],
+                "Karangpandan": ["Bangsri","Dayu","Doplang","Gerdu","Gondangmanis","Harjosari","Karang","Karangpandan","Ngemplak","Salam","Tohkuning"]
+            };
+
+            // Menampilkan daftar kecamatan
+            var kecamatanArray = Object.keys(dataWilayah).sort(); 
+            for (var kecamatan in dataWilayah) {
+                dataWilayah[kecamatan].sort(); // Mengurutkan kelurahan
+            }
+
+            var kecamatanList = document.getElementById("kecamatanList");
+            kecamatanArray.forEach(function(kecamatan) {
+                var kecamatanOption = document.createElement("div");
+                kecamatanOption.textContent = kecamatan;
+                kecamatanOption.onclick = function() {
+                    document.getElementById("kecamatanInput").value = this.textContent;
+                    document.getElementById("kelurahanInput").disabled = false;
+                    kecamatanList.style.display = "none";
+
+        // Menampilkan daftar kelurahan sesuai kecamatan yang dipilih
+        var kelurahanList = document.getElementById("kelurahanList");
+        kelurahanList.innerHTML = "";
+        var selectedKecamatan = this.textContent;
+        dataWilayah[selectedKecamatan].forEach(function(kelurahan) {
+            var kelurahanOption = document.createElement("div");
+            kelurahanOption.textContent = kelurahan;
+            kelurahanOption.onclick = function() {
+                document.getElementById("kelurahanInput").value = this.textContent;
+                kelurahanList.style.display = "none";
+            };
+            kelurahanList.appendChild(kelurahanOption);
+        });
+
+                kelurahanList.style.display = "block";
+            };
+            kecamatanList.appendChild(kecamatanOption);
+        });
+
+        // Tampilkan daftar kecamatan ketika input kecamatan diklik
+        document.getElementById("kecamatanInput").onclick = function() {
+            kecamatanList.style.display = "block";
+        };
+
+        document.getElementById("kelurahanInput").onclick = function() {
+            var kelurahanList = document.getElementById("kelurahanList");
+            if (!this.disabled) {
+                kelurahanList.style.display = "block";
+            }
+        };
+
+        // Fungsi pencarian ketika tombol 'Cari' diklik
+        document.getElementById("searchBtn").addEventListener("click", function() {
+            var searchKecamatan = document.getElementById("kecamatanInput").value;
+            var searchKelurahan = document.getElementById("kelurahanInput").value;
+            var searchNIB = document.getElementById("searchNIB").value;
+
+        // Debugging untuk melihat input pengguna
+        console.log("Input Kecamatan: ", searchKecamatan);
+        console.log("Input Kelurahan: ", searchKelurahan);
+        console.log("Input NIB: ", searchNIB);
+
+        // Filter layer berdasarkan kriteria pencarian
+        var whereClause = [];
+        if (searchKecamatan) {
+            whereClause.push(`KECAMATAN LIKE '%${searchKecamatan}%'`);
+        }
+        if (searchKelurahan) {
+            whereClause.push(`KELURAHAN LIKE '%${searchKelurahan}%'`);
+        }
+        if (searchNIB) {
+            whereClause.push(`NIB LIKE '%${searchNIB}%'`);
+        }
+        var finalWhereClause = whereClause.join(" AND ");
+
+        // Definisikan fungsi query untuk kedua layer
+        function queryLayer(layer) {
+            return layer.queryFeatures({
+                where: finalWhereClause,  // Gunakan klausa where yang sama
+                outFields: ["NIB", "KECAMATAN", "KELURAHAN", "LUASTERTUL", "TIPEHAK"], // Field-field yang diambil
+                returnGeometry: true      // Penting untuk mendapatkan geometri untuk zoom
+            });
+        }
+
+        // Query kedua layer (Jenawi, Kerjo, Jatipuro, Jumapolo, Jatiyoso, Jumantono, Matesih, Ngargoyoso,
+        // Mojogedang, Karangpandan, Tasikmadu, Tawangmangu, Jaten, Kebakkramat, Karanganyar, Gondangrejo, Colomadu)
+        Promise.all([queryLayer(Jenawi), queryLayer(Kerjo), queryLayer(Jatipuro), queryLayer(Jumapolo), queryLayer(Jatiyoso),
+        queryLayer(Jumantono), queryLayer(Matesih), queryLayer(Ngargoyoso), queryLayer(Mojogedang), queryLayer(Karangpandan),
+        queryLayer(Tasikmadu), queryLayer(Tawangmangu), queryLayer(Jaten), queryLayer(Kebakkramat), queryLayer(Karanganyar),
+        queryLayer(Gondangrejo), queryLayer(Colomadu)]).then(function(results) {
+            var allFeatures = [];
+
+        // Gabungkan semua fitur dari hasil query
+        results.forEach(function(result) {
+            allFeatures = allFeatures.concat(result.features);
+        });
+
+        if (allFeatures.length > 0) {
+            // Dapatkan geometri fitur hasil pertama dan lakukan zoom
+            var feature = allFeatures[0];
+            view.goTo({
+                target: feature.geometry,
+                zoom: 20 // Atur zoom level, sesuaikan sesuai kebutuhan
+            }).then(function() {
+               // Tampilkan popup setelah zoom
+                view.popup.open({
+                    title: "Detail Bidang",
+                    location: feature.geometry,  // Lokasi untuk menampilkan popup
+                    content: `
+                    <b>NIB:</b> ${feature.attributes.NIB}<br>
+                    <b>Kecamatan:</b> ${feature.attributes.KECAMATAN}<br>
+                    <b>Kelurahan:</b> ${feature.attributes.KELURAHAN}<br>
+                    <b>Luas:</b> ${feature.attributes.LUASTERTUL} m2<br>
+                    <b>Tipe Hak:</b> ${feature.attributes.TIPEHAK}
+                     `
+                });
+                // Highlight atau select bidang
+                var highlight = view.highlight([feature]);
+    
+                // Debugging
+                console.log("Ditemukan fitur: ", feature.attributes);
+
+                // Membuat fitur tetap terseleksi selama 3 detik
+                setTimeout(function() {
+                highlight.remove(); // Menghilangkan highlight
+                }, 3000);
+            });
+            
+        } else {
+            // Jika tidak ada fitur yang ditemukan
+            alert("Tidak ada hasil yang cocok dengan pencarian Anda.");
+        }
+    }).catch(function(error) {
+        console.error("Error saat query fitur: ", error);
+    });
+});
+
 
         });
     </script>
