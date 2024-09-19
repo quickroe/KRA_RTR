@@ -157,6 +157,7 @@
             margin: 4px 0;
             padding: 4px;
             width: 90%;
+            
         }
 
         /*cari kooridnat*/
@@ -1373,134 +1374,153 @@
 
             view.ui.add(toggle, "bottom-right");
 
-            // Toggle TM-3 form visibility
-            var toggleTM3Btn = document.getElementById("toggleTM3Btn");
-            var tm3Input = document.getElementById("tm3Input");
+            //-------------------
+          // Toggle TM-3 form visibility
+var toggleTM3Btn = document.getElementById("toggleTM3Btn");
+var tm3Input = document.getElementById("tm3Input");
 
-            toggleTM3Btn.addEventListener("click", function () {
-                if (tm3Input.style.display === "none") {
-                    tm3Input.style.display = "block";
-                    toggleTM3Btn.innerText = "<< TM-3";
-                } else {
-                    tm3Input.style.display = "none";
-                    toggleTM3Btn.innerText = "TM-3";
-                }
-            });
+toggleTM3Btn.addEventListener("click", function () {
+    if (tm3Input.style.display === "none") {
+        tm3Input.style.display = "block";
+        toggleTM3Btn.innerText = "<< TM-3";
+    } else {
+        tm3Input.style.display = "none";
+        toggleTM3Btn.innerText = "TM-3";
+    }
+});
 
-            // Konversi TM3 ke Lat/Long dan masukkan ke form Coordinate
-            document.getElementById("convertBtn").addEventListener("click", function () {
-                const easting = parseFloat(document.getElementById("tm3-easting").value);
-                const northing = parseFloat(document.getElementById("tm3-northing").value);
-                const zone = document.getElementById("zone").value;
+// Toggle Coordinate form visibility
+var toggleBtn = document.getElementById("toggleBtn");
+var coordinateInput = document.getElementById("coordinateInput");
 
-                if (!isNaN(easting) && !isNaN(northing)) {
-                    const result = convertTM3ToLatLon(easting, northing, zone);
+toggleBtn.addEventListener("click", function () {
+    if (coordinateInput.style.display === "none") {
+        coordinateInput.style.display = "block";
+        toggleBtn.innerText = "<< Coordinate";
+    } else {
+        coordinateInput.style.display = "none";
+        toggleBtn.innerText = "Coordinate";
+    }
+});
 
-                    // Masukkan hasil konversi ke input Latitude dan Longitude
-                    document.getElementById("latitude").value = result.latitude.toFixed(6);
-                    document.getElementById("longitude").value = result.longitude.toFixed(6);
-                } else {
-                    alert("Masukkan koordinat TM3 yang valid.");
-                }
-            });
+// Fungsi untuk menghitung konversi TM3 ke Latitude/Longitude
+function convertTM3ToLatLon(easting, northing, zone) {
+    const a = 6378137; // Jari-jari bumi (WGS84)
+    const e = 0.081819191; // Eksentrisitas elipsoid
+    const FE = 200000; // False Easting untuk TM3 di Indonesia
+    const FN = 1500000; // False Northing untuk belahan selatan
+    const k0 = 0.9999; // Skala pusat
+    let lambda0; // Central Meridian dalam radian
 
-            // Fungsi untuk menghitung konversi TM3 ke Latitude/Longitude
-            function convertTM3ToLatLon(easting, northing, zone) {
-                const a = 6378137;
-                const e = 0.081819191;
-                const FE = 200000;
-                const FN = 1500000;
-                const k0 = 0.9999;
-                let lambda0;
+    // Tentukan central meridian berdasarkan zona yang dipilih
+    if (zone === "49.1") {
+        lambda0 = 109.5 * (Math.PI / 180);
+    } else if (zone === "49.2") {
+        lambda0 = 112.5 * (Math.PI / 180);
+    }
 
-                // Tentukan central meridian berdasarkan zona yang dipilih
-                if (zone === "49.1") {
-                    lambda0 = 109.5 * (Math.PI / 180);
-                } else if (zone === "49.2") {
-                    lambda0 = 112.5 * (Math.PI / 180);
-                }
+    const M = (northing - FN) / k0;
+    const mu = M / (a * (1 - Math.pow(e, 2) / 4 - 3 * Math.pow(e, 4) / 64 - 5 * Math.pow(e, 6) / 256));
+    const e1 = (1 - Math.sqrt(1 - Math.pow(e, 2))) / (1 + Math.sqrt(1 - Math.pow(e, 2)));
+    const J1 = 3 * e1 / 2 - 27 * Math.pow(e1, 3) / 32;
+    const J2 = 21 * Math.pow(e1, 2) / 16 - 55 * Math.pow(e1, 4) / 32;
+    const J3 = 151 * Math.pow(e1, 3) / 96;
+    const J4 = 1097 * Math.pow(e1, 4) / 512;
+    const phi1 = mu + J1 * Math.sin(2 * mu) + J2 * Math.sin(4 * mu) + J3 * Math.sin(6 * mu) + J4 * Math.sin(8 * mu);
 
-                const M = (northing - FN) / k0;
-                const mu = M / (a * (1 - Math.pow(e, 2) / 4 - 3 * Math.pow(e, 4) / 64 - 5 * Math.pow(e, 6) / 256));
-                const e1 = (1 - Math.sqrt(1 - Math.pow(e, 2))) / (1 + Math.sqrt(1 - Math.pow(e, 2)));
-                const J1 = 3 * e1 / 2 - 27 * Math.pow(e1, 3) / 32;
-                const J2 = 21 * Math.pow(e1, 2) / 16 - 55 * Math.pow(e1, 4) / 32;
-                const J3 = 151 * Math.pow(e1, 3) / 96;
-                const J4 = 1097 * Math.pow(e1, 4) / 512;
-                const phi1 = mu + J1 * Math.sin(2 * mu) + J2 * Math.sin(4 * mu) + J3 * Math.sin(6 * mu) + J4 * Math.sin(8 * mu);
+    const N1 = a / Math.sqrt(1 - Math.pow(e * Math.sin(phi1), 2));
+    const T1 = Math.pow(Math.tan(phi1), 2);
+    const C1 = (Math.pow(e, 2) / (1 - Math.pow(e, 2))) * Math.pow(Math.cos(phi1), 2);
+    const R1 = a * (1 - Math.pow(e, 2)) / Math.pow(1 - Math.pow(e * Math.sin(phi1), 2), 3 / 2);
+    const D = (easting - FE) / (N1 * k0);
 
-                const N1 = a / Math.sqrt(1 - Math.pow(e * Math.sin(phi1), 2));
-                const T1 = Math.pow(Math.tan(phi1), 2);
-                const C1 = (Math.pow(e, 2) / (1 - Math.pow(e, 2))) * Math.pow(Math.cos(phi1), 2);
-                const R1 = a * (1 - Math.pow(e, 2)) / Math.pow(1 - Math.pow(e * Math.sin(phi1), 2), 3 / 2);
-                const D = (easting - FE) / (N1 * k0);
+    // Hitung latitude 
+    const lat = phi1 - (N1 * Math.tan(phi1) / R1) * ((D * D / 2) - (5 + 3 * T1 + 10 * C1 - 4 * C1 * C1) * Math.pow(D, 4) / 24);
+    // Hitung longitude
+    const lon = lambda0 + (D / Math.cos(phi1)) - ((1 + 2 * T1 + C1) * Math.pow(D, 3) / 6);
 
-                // Hitung latitude dan longitude
-                const lat = phi1 - (N1 * Math.tan(phi1) / R1) * ((D * D / 2) - (5 + 3 * T1 + 10 * C1 - 4 * C1 * C1) * Math.pow(D, 4) / 24);
-                const lon = lambda0 + (D / Math.cos(phi1)) - ((1 + 2 * T1 + C1) * Math.pow(D, 3) / 6);
+    // Konversi ke derajat
+    const latitude = lat * (180 / Math.PI);
+    const longitude = lon * (180 / Math.PI);
 
-                return {
-                    latitude: lat * (180 / Math.PI),
-                    longitude: lon * (180 / Math.PI)
-                };
-            }
+    return { latitude, longitude };
+}
 
-            // Dapatkan elemen DOM koordinat LL
-                var toggleBtn = document.getElementById("toggleBtn");
-                var coordinateInput = document.getElementById("coordinateInput");
-                var goToBtn = document.getElementById("goToBtn");
+// Fungsi untuk menambahkan pin ke peta
+function addPinToMap(latitude, longitude) {
+    var point = {
+        type: "point", // Jenis geometri
+        longitude: longitude,
+        latitude: latitude
+    };
 
-            // Toggle untuk menampilkan atau menyembunyikan input koordinat
-                    toggleBtn.addEventListener("click", function () {
-                    if (coordinateInput.style.display === "none") {
-                    coordinateInput.style.display = "block";
-                    toggleBtn.innerText = "<< Coordinate";
-                    } else {
-                    coordinateInput.style.display = "none";
-                    toggleBtn.innerText = "Coordinate";
-                    }
-            });
+    var markerSymbol = {
+        type: "simple-marker", // Jenis simbol
+        color: [255, 255, 0], // Warna pin (misalnya kuning)
+        outline: {
+            color: [255, 255, 255], // Warna outline pin (putih)
+            width: 2
+        }
+    };
 
-            // Event handler untuk tombol Go To
-                    goToBtn.addEventListener("click", function () {
-                    var latitude = parseFloat(document.getElementById("latitude").value);
-                    var longitude = parseFloat(document.getElementById("longitude").value);
+    var pointGraphic = new Graphic({
+        geometry: point,
+        symbol: markerSymbol
+    });
 
-                    if (!isNaN(latitude) && !isNaN(longitude)) {
-                    view.goTo({
-                    center: [longitude, latitude],
-                    zoom: 19 // Sesuaikan level zoom
-                    });
+    // Hapus pin lama (jika ada) sebelum menambahkan yang baru
+    view.graphics.removeAll();
+    view.graphics.add(pointGraphic);
+}
 
-            // Tambahkan pin (penanda lokasi) di lokasi yang diinputkan
-                    var point = {
-                        type: "point", // Jenis geometri
-                        longitude: longitude,
-                        latitude: latitude
-                        };
+// Fungsi gabungan: Konversi TM3 dan GoTo dengan Zoom
+document.getElementById("convertBtn").addEventListener("click", function () {
+    const easting = parseFloat(document.getElementById("tm3-easting").value);
+    const northing = parseFloat(document.getElementById("tm3-northing").value);
+    const zone = document.getElementById("zone").value;
 
-                    var markerSymbol = {
-                        type: "simple-marker", // Jenis simbol
-                        color: [255, 255, 0], // Warna pin (misalnya kuning)
-                        outline: {color: [255, 255, 255], // Warna outline pin (putih)
-                                  width: 2
-                                  }
-                        };
+    if (!isNaN(easting) && !isNaN(northing)) {
+        const result = convertTM3ToLatLon(easting, northing, zone);
 
-                        var pointGraphic = new Graphic({
-                            geometry: point,
-                            symbol: markerSymbol
-                        });
+        // Masukkan hasil konversi ke input Latitude dan Longitude
+        document.getElementById("latitude").value = result.latitude.toFixed(6);
+        document.getElementById("longitude").value = result.longitude.toFixed(6);
 
-                    // Hapus pin lama (jika ada) sebelum menambahkan yang baru
-                        view.graphics.removeAll();
-                        view.graphics.add(pointGraphic);
+        // Pindahkan peta ke koordinat hasil konversi
+        view.goTo({
+            center: [result.longitude, result.latitude],
+            zoom: 19 // Sesuaikan level zoom
+        });
 
-                    } else {
-                    alert("Please enter valid coordinates.");
-                    }
-                    });
-            
+        // Tambahkan pin (penanda lokasi) di lokasi hasil konversi
+        addPinToMap(result.latitude, result.longitude);
+
+    } else {
+        alert("Masukkan koordinat TM3 yang valid.");
+    }
+});
+
+// Fungsi Go To berdasarkan input Latitude/Longitude (tombol koordinat)
+document.getElementById("goToBtn").addEventListener("click", function () {
+    var latitude = parseFloat(document.getElementById("latitude").value);
+    var longitude = parseFloat(document.getElementById("longitude").value);
+
+    if (!isNaN(latitude) && !isNaN(longitude)) {
+        view.goTo({
+            center: [longitude, latitude],
+            zoom: 19 // Sesuaikan level zoom
+        });
+
+        // Tambahkan pin (penanda lokasi) di lokasi yang diinputkan
+        addPinToMap(latitude, longitude);
+
+    } else {
+        alert("Masukkan koordinat yang valid.");
+    }
+});
+
+
+            //-------------------------
              // Toggle untuk Search Container cari NIB
             var toggleSearchContainer = document.getElementById("toggleSearchContainer");
             var searchContainer = document.getElementById("searchContainer");
