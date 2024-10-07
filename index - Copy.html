@@ -268,14 +268,6 @@
         <input type="text" id="longitude" placeholder="Enter 110.76543"><br>
         <button id="goToBtn">Go To</button>
      </div>
-     <div id="koordinat-display" style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); 
-    background-color: rgba(37, 37, 37, 0.962); color: white; padding: 5px 10px; border: 1px solid #ccc; border-radius: 5px; z-index: 10; display: none;">
-        <!-- Koordinat akan muncul di sini setelah klik pada peta -->
-    </div>
-
-    <div id="viewDiv" style="width: 100%; height: 100vh;"></div>
-    <div id="koordinat-display">Koordinat:</div>
-    <div id="tm3-display">TM3:</div>
     <script>
         require([
             "esri/Map",
@@ -436,66 +428,7 @@
                     content: "Kategori: {PTNOBJNAME}"
                 }
             });
-//---------------
-// Fungsi untuk mengonversi Latitude/Longitude ke TM3
-function convertLatLonToTM3(latitude, longitude, zone) {
-                const a = 6378137; // Jari-jari bumi (WGS84)
-                const e = 0.081819191; // Eksentrisitas elipsoid
-                const FE = 200000; // False Easting untuk TM3 di Indonesia
-                const FN = 1500000; // False Northing untuk belahan selatan
-                const k0 = 0.9999; // Skala pusat
-                let lambda0; // Central Meridian dalam radian
 
-                // Tentukan central meridian berdasarkan zona yang dipilih
-                if (zone === "49.1") {
-                    lambda0 = 109.5 * (Math.PI / 180);
-                } else if (zone === "49.2") {
-                    lambda0 = 112.5 * (Math.PI / 180);
-                }
-
-                // Konversi latitude dan longitude ke radian
-                const phi = latitude * (Math.PI / 180);
-                const lambda = longitude * (Math.PI / 180);
-
-                const N = a / Math.sqrt(1 - Math.pow(e * Math.sin(phi), 2));
-                const T = Math.pow(Math.tan(phi), 2);
-                const C = (Math.pow(e, 2) / (1 - Math.pow(e, 2))) * Math.pow(Math.cos(phi), 2);
-                const A = Math.cos(phi) * (lambda - lambda0);
-
-                const M = a * ((1 - Math.pow(e, 2) / 4 - 3 * Math.pow(e, 4) / 64 - 5 * Math.pow(e, 6) / 256) * phi
-                            - (3 * Math.pow(e, 2) / 8 + 3 * Math.pow(e, 4) / 32 + 45 * Math.pow(e, 6) / 1024) * Math.sin(2 * phi)
-                            + (15 * Math.pow(e, 4) / 256 + 45 * Math.pow(e, 6) / 1024) * Math.sin(4 * phi)
-                            - (35 * Math.pow(e, 6) / 3072) * Math.sin(6 * phi));
-
-                const easting = FE + k0 * N * (A + (1 - T + C) * Math.pow(A, 3) / 6 + (5 - 18 * T + T * T + 72 * C - 58 * (Math.pow(e, 2) / (1 - Math.pow(e, 2)))) * Math.pow(A, 5) / 120);
-                const northing = FN + k0 * (M + N * Math.tan(phi) * (Math.pow(A, 2) / 2 + (5 - T + 9 * C + 4 * C * C) * Math.pow(A, 4) / 24 + (61 - 58 * T + T * T + 600 * C - 330 * (Math.pow(e, 2) / (1 - Math.pow(e, 2)))) * Math.pow(A, 6) / 720));
-
-                return { easting: easting.toFixed(2), northing: northing.toFixed(2) };
-            }
-
-            // Event listener untuk menangani klik pada peta
-            view.on("click", function(event) {
-                console.log("Map clicked!"); // Debug log untuk memastikan klik terdeteksi
-
-                // Dapatkan koordinat dari lokasi yang diklik
-                const latitude = event.mapPoint.latitude.toFixed(6);
-                const longitude = event.mapPoint.longitude.toFixed(6);
-                const tm3Zone = "49.1"; // Sesuaikan zona TM3 jika diperlukan
-                const tm3Coords = convertLatLonToTM3(latitude, longitude, tm3Zone);
-
-                // Update elemen koordinat di tengah atas dengan koordinat baru
-                const koordinatDisplay = document.getElementById('koordinat-display');
-                koordinatDisplay.style.display = 'block';
-                koordinatDisplay.innerHTML = `Koordinat: Latitude: ${latitude}, Longitude: ${longitude}`;
-
-                // Update elemen TM3 di tengah bawah layar dengan koordinat baru
-                const tm3Display = document.getElementById('tm3-display');
-                tm3Display.style.display = 'block';
-                tm3Display.innerHTML = `TM3: Easting: ${tm3Coords.easting}, Northing: ${tm3Coords.northing}`;
-
-                console.log(`TM3 Koordinat: Easting: ${tm3Coords.easting}, Northing: ${tm3Coords.northing}`); // Debug log TM3
-            });
-//----------------
             // Layer Persil Colomadu
             const Colomadu = new GeoJSONLayer({
                 url: "https://raw.githubusercontent.com/codemrc/KRA_RTR/main/colomadu.json",
