@@ -302,6 +302,10 @@
     <div id="viewDiv" style="width: 100%; height: 100vh;"></div>
     <div id="koordinat-display">Koordinat:</div>
     <div id="tm3-display">TM3:</div>
+    <div class="toggle-btn" 
+         id="toggleAnalystBtn"
+         style="top: 572px;">Analyst</div>
+
     <script>
         require([
             "esri/Map",
@@ -314,7 +318,10 @@
             "esri/widgets/Locate",
             "esri/Graphic",
         ], (Map, MapView, GeoJSONLayer, GroupLayer, BasemapToggle,Expand,LayerList, Locate, Graphic) => {
-
+            // Event listener untuk tombol "Analyst"
+                document.getElementById("toggleAnalystBtn").addEventListener("click", function() {
+                    window.location.href = "https://codemrc.github.io/KRA_RTR_analyst/";
+                });
             // Warna untuk setiap kategori NAMOBJ
             const renderer_RTRW = {
                 type: "unique-value",
